@@ -1,0 +1,131 @@
+/* SPDX-License-Identifier: AGPL-3.0-only */
+/* AdamTicketAgingColors
+ * Ticket Aging Colors for FreeScout
+ *
+ * Visual indicator: a left-side color bar on each conversation row.
+ * The bar "breathes" (alpha pulse) based on per-mailbox intensity settings.
+ *
+ * This module intentionally does NOT tint the entire row background.
+ */
+
+/* Defaults (overridden per-mailbox by Resources/views/layouts/css_vars.blade.php) */
+:root {
+    --adamtac-yellow: #FFC107;
+    --adamtac-yellow-rgb: 255, 193, 7;
+    --adamtac-orange: #FF9800;
+    --adamtac-orange-rgb: 255, 152, 0;
+    --adamtac-red: #B71C1C;
+    --adamtac-red-rgb: 183, 28, 28;
+
+    /* 0–100 (used as max opacity) */
+    --adamtac-yellow-intensity: 20;
+    --adamtac-orange-intensity: 25;
+    --adamtac-red-intensity: 30;
+
+    /* Animation phase anchor (set once via module JS) */
+    --adamtac-sync: 0;
+}
+
+
+
+
+
+/* Ensure the indicator column can actually display a 5px bar */
+tr.adamtac-row td.conv-current {
+  width: 5px !important;
+  min-width: 5px !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+/* Breathing animations (apply only to the LEFT bar via td:first-child box-shadow) */
+@keyframes adamtac-bar-yellow {
+  0%, 100% { background-color: rgba(var(--adamtac-yellow-rgb), 0); }
+  50%      { background-color: rgba(var(--adamtac-yellow-rgb), calc(var(--adamtac-yellow-intensity) / 100)); }
+}
+
+@keyframes adamtac-bar-red {
+  0%, 100% { background-color: rgba(var(--adamtac-red-rgb), 0); }
+  50%      { background-color: rgba(var(--adamtac-red-rgb), calc(var(--adamtac-red-intensity) / 100)); }
+}
+
+@keyframes adamtac-bar-orange {
+  0%, 100% { background-color: rgba(var(--adamtac-orange-rgb), 0); }
+  50%      { background-color: rgba(var(--adamtac-orange-rgb), calc(var(--adamtac-orange-intensity) / 100)); }
+}
+
+/* LEFT accent bar (unified implementation): always render as a ::before bar.
+ * This guarantees the same intensity + animation behavior on both:
+ *  - the main row indicator column (td.conv-current)
+ *  - the CustomFields extra row inserted under the ticket row
+ */
+
+/* Main row indicator column becomes a positioning context for the bar */
+tr.adamtac-row td.conv-current { position: relative; background: transparent !important; }
+
+/* CustomFields extra row: every TD gets a left bar (matches the extra-row height) */
+tr.adamtac-row + tr.cf-conv-row td { position: relative; }
+
+/* Shared bar geometry */
+tr.adamtac-row td.conv-current::before,
+tr.adamtac-row + tr.cf-conv-row td::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 5px;
+  pointer-events: none;
+}
+
+/* Shared phase anchor (keeps both rows in-sync even if the cf row is injected later) */
+tr.adamtac-row td.conv-current::before,
+tr.adamtac-row + tr.cf-conv-row td::before {
+  animation-delay: calc(-1s * var(--adamtac-sync));
+}
+
+/* Color + timing (MUST match between the main row and its extra row) */
+tr.adamtac-row.adamtac-yellow td.conv-current::before,
+tr.adamtac-row.adamtac-yellow + tr.cf-conv-row td::before {
+  animation: adamtac-bar-yellow 3s ease-in-out infinite;
+}
+
+tr.adamtac-row.adamtac-orange td.conv-current::before,
+tr.adamtac-row.adamtac-orange + tr.cf-conv-row td::before {
+  animation: adamtac-bar-orange 2.5s ease-in-out infinite;
+}
+
+tr.adamtac-row.adamtac-red td.conv-current::before,
+tr.adamtac-row.adamtac-red + tr.cf-conv-row td::before {
+  animation: adamtac-bar-red 2s ease-in-out infinite;
+}
+
+/* Ensure we never tint the whole row (except the conv-current bar) */
+tr.adamtac-row td:not(.conv-current),
+tr.adamtac-row th:not(.conv-current) {
+  background-color: inherit !important;
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  tr.adamtac-row.adamtac-yellow td.conv-current::before,
+  tr.adamtac-row.adamtac-orange td.conv-current::before,
+  tr.adamtac-row.adamtac-red td.conv-current::before,
+  tr.adamtac-row.adamtac-yellow + tr.cf-conv-row td::before,
+  tr.adamtac-row.adamtac-orange + tr.cf-conv-row td::before,
+  tr.adamtac-row.adamtac-red + tr.cf-conv-row td::before {
+    animation: none !important;
+  }
+
+  tr.adamtac-row.adamtac-yellow td.conv-current::before,
+  tr.adamtac-row.adamtac-yellow + tr.cf-conv-row td::before {
+    background-color: rgba(var(--adamtac-yellow-rgb), calc(var(--adamtac-yellow-intensity) / 100)) !important;
+  }
+  tr.adamtac-row.adamtac-orange td.conv-current::before,
+  tr.adamtac-row.adamtac-orange + tr.cf-conv-row td::before {
+    background-color: rgba(var(--adamtac-orange-rgb), calc(var(--adamtac-orange-intensity) / 100)) !important;
+  }
+  tr.adamtac-row.adamtac-red td.conv-current::before,
+  tr.adamtac-row.adamtac-red + tr.cf-conv-row td::before {
+    background-color: rgba(var(--adamtac-red-rgb), calc(var(--adamtac-red-intensity) / 100)) !important;
+  }
+}

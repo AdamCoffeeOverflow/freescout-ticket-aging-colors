@@ -1,0 +1,21 @@
+{
+  "name": "adamcoffeeoverflow/adamticketagingcolors",
+  "description": "FreeScout module: Ticket Aging Colors (left-side aging indicator bar)",
+  "authors": [
+    {
+      "name": "AdamCoffeeOverflow",
+      "email": ""
+    }
+  ],
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Modules\\\\AdamTicketAgingColors\\\\Providers\\\\AdamTicketAgingColorsServiceProvider"
+      ],
+      "aliases": {}
+    }
+  },
+  "license": "AGPL-3.0-only",
+  "type": "freescout-module",
+  "homepage": "https://github.com/AdamCoffeeOverflow"
+}

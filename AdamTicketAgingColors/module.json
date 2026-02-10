@@ -1,0 +1,22 @@
+{
+  "name": "Ticket Aging Colors",
+  "alias": "adamticketagingcolors",
+  "description": "Adds a left-side color bar on ticket rows based on how long Active tickets have been waiting, with per-mailbox thresholds and optional breathing effect.",
+  "version": "1.0.3",
+  "author": "AdamCoffeeOverflow",
+  "authorUrl": "https://github.com/AdamCoffeeOverflow",
+  "requiredAppVersion": "1.8.0",
+  "license": "AGPL-3.0",
+  "keywords": [
+    "tickets",
+    "sla",
+    "colors",
+    "aging"
+  ],
+  "active": 0,
+  "order": 0,
+  "providers": [
+    "Modules\\AdamTicketAgingColors\\Providers\\AdamTicketAgingColorsServiceProvider"
+  ],
+  "img": "/modules/adamticketagingcolors/img/module-icon.png"
+}
