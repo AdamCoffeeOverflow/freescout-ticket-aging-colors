@@ -1,4 +1,5 @@
 # Ticket Aging Colors (AdamTicketAgingColors)
+Author: AdamCoffeeOverflow
 
 FreeScout module that adds a **left-side aging accent bar** on each conversation row in the **ticket list** so you can quickly spot **Active** tickets that have been waiting too long.
 
