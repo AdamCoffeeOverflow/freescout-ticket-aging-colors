@@ -11,12 +11,15 @@ FreeScout module that adds a **left-side aging accent bar** on each conversation
 ## What it does
 
 - Applies **only** to tickets in **Active** status.
+- Resets when Ticket is set to **Pending** status.
 - Does **not** apply to **Closed** tickets.
 - Adds a CSS-driven **accent bar** visible in conversation list.
-- Supports **three escalation levels** (Level 1 / Level 2 / Level 3), each with:
+- Supports **three escalation levels** (Level 1 Yellow / Level 2 Orange / Level 3 Deep red), each with:
   - Threshold (value + unit)
   - Color (Yellow, Orange, Deep Red)
   - Intensity (0–100) controlling the pulse opacity
+  - The module will accurately highlight which tickets truly require your attention, using the three‑level, color‑coded escalation system
+  - Based on the threshold set by Admin.
 
  <img width="366" height="505" alt="Screenshot 2026-02-10 122918" src="https://github.com/user-attachments/assets/d02295fc-8df9-495d-9f5d-f546030a9810" />
 
