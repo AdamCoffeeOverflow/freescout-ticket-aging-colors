@@ -68,6 +68,6 @@ Licensed under **AGPL-3.0-only**. See `LICENSE` and `NOTICE`.
 
 ### Network use (AGPL §13)
 
-If this module is used on a FreeScout instance that users access over a network (HTTP/HTTPS), you must make the corresponding code for the exact version running on the server available to those users, as required by the AGPL.
+
 
 
