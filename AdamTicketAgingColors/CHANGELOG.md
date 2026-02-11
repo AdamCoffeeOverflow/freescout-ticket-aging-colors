@@ -28,6 +28,12 @@ All notable changes to **Ticket Aging Colors** (AdamTicketAgingColors) for FreeS
 ## [1.0.3] - 2026-02-06
 
 ### Fixed
+
+## [1.0.4] - 2026-02-10
+-Included auto-update of the modules push via freescout > settings > module when available
+
+
+
 - Unified the left bar rendering for both the main conversation row and the CustomFields extra row
   (both are now drawn using the same `::before` bar implementation).
 - Synced the breathing animation phase for the CustomFields extension so it matches the main bar.
