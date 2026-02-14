@@ -2,7 +2,7 @@
   "name": "Ticket Aging Colors",
   "alias": "adamticketagingcolors",
   "description": "Adds a left-side color bar on ticket rows based on how long Active tickets have been waiting, with per-mailbox thresholds and optional breathing effect.",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "latestVersionUrl": "https://raw.githubusercontent.com/AdamCoffeeOverflow/freescout-ticket-aging-colors/main/version.txt",
   "latestVersionZipUrl": "https://github.com/AdamCoffeeOverflow/freescout-ticket-aging-colors/releases/latest/download/AdamTicketAgingColors.zip",
   "author": "AdamCoffeeOverflow",

@@ -10,7 +10,9 @@ use App\Thread;
 use Carbon\Carbon;
 
 // Module alias constant (FreeScout best practice)
-define('ADAMTICKETAGINGCOLORS_MODULE', 'adamticketagingcolors');
+if (!defined('ADAMTICKETAGINGCOLORS_MODULE')) {
+    define('ADAMTICKETAGINGCOLORS_MODULE', 'adamticketagingcolors');
+}
 
 class AdamTicketAgingColorsServiceProvider extends ServiceProvider
 {
@@ -30,7 +32,7 @@ class AdamTicketAgingColorsServiceProvider extends ServiceProvider
                 echo \Minify::stylesheet([
                     \Module::getPublicPath(self::ALIAS).'/css/module.css',
                 ]);
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 // Fail silently to avoid breaking the UI if Minify is unavailable
             }
         });
@@ -39,7 +41,7 @@ class AdamTicketAgingColorsServiceProvider extends ServiceProvider
                 echo \Minify::javascript([
                     \Module::getPublicPath(self::ALIAS).'/js/module.js',
                 ]);
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 // Fail silently
             }
         });
@@ -109,6 +111,11 @@ class AdamTicketAgingColorsServiceProvider extends ServiceProvider
         // that echo without leading space.
         \Eventy::addAction('conversations_table.row_class', function($conversation) {
             try {
+                static $now = null;
+                if ($now === null) {
+                    $now = Carbon::now();
+                }
+
                 // Only apply to Active tickets
                 if (!$conversation || !$conversation->isActive()) {
                     return;
@@ -147,21 +154,30 @@ class AdamTicketAgingColorsServiceProvider extends ServiceProvider
                     return;
                 }
 
-                $now = Carbon::now();
-
                 // Determine elapsed time in a given unit.
-                $elapsedForUnit = function(string $unit) use ($from, $now): int {
+                $elapsedCache = [];
+                $elapsedForUnit = function(string $unit) use ($from, $now, &$elapsedCache): int {
+                    if (isset($elapsedCache[$unit])) {
+                        return $elapsedCache[$unit];
+                    }
+
                     switch ($unit) {
                         case 'minutes':
-                            return $from->diffInMinutes($now);
+                            $elapsedCache[$unit] = $from->diffInMinutes($now);
+                            break;
                         case 'hours':
-                            return $from->diffInHours($now);
+                            $elapsedCache[$unit] = $from->diffInHours($now);
+                            break;
                         case 'calendar_days':
-                            return $from->diffInDays($now);
+                            $elapsedCache[$unit] = $from->diffInDays($now);
+                            break;
                         case 'business_days':
                         default:
-                            return MailboxSettings::businessDaysBetween($from, $now);
+                            $elapsedCache[$unit] = MailboxSettings::businessDaysBetween($from, $now);
+                            break;
                     }
+
+                    return $elapsedCache[$unit];
                 };
 
                 $l1v = (int)($settings['yellow_value'] ?? 2);
