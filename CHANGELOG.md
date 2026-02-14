@@ -30,11 +30,21 @@ All notable changes to **Ticket Aging Colors** (AdamTicketAgingColors) for FreeS
 ### Fixed
 
 ## [1.0.4] - 2026-02-10
--Included auto-update of the modules push via freescout > settings > module when available
-
-
-
+- Included auto-update support via FreeScout's Modules UI when hosted on GitHub.
 - Unified the left bar rendering for both the main conversation row and the CustomFields extra row
   (both are now drawn using the same `::before` bar implementation).
 - Synced the breathing animation phase for the CustomFields extension so it matches the main bar.
 - Ensured intensity applies identically to both the main bar and the extended section.
+
+## [1.0.5] - 2026-02-14
+
+## [1.0.7] - 2026-02-14
+
+### Fixed
+- Hardened asset injection to avoid fatal errors when `Minify` is unavailable.
+- Prevented constant redefinition edge-case.
+- Messed up the repo files version, re-organized it, bumped everything to 1.0.7
+
+### Improved
+- Faster business-day calculation and reduced per-row repeated computations.
+- Removed inline styles from settings UI for stricter CSP compatibility.

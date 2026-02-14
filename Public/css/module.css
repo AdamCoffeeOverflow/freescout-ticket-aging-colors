@@ -26,6 +26,11 @@
     --adamtac-sync: 0;
 }
 
+/* Settings page only */
+.adamtac-settings input.form-control-range {
+  width: 100%;
+}
+
 
 
 
