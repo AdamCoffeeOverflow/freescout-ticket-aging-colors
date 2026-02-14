@@ -15,7 +15,7 @@
 
   @include('partials/flash_messages')
 
-  <div class="row-container adamtac-settings">
+  <div class="row-container">
     <div class="row">
       <div class="col-xs-12">
 
@@ -89,7 +89,8 @@
                           name="yellow_intensity"
                           id="yellow_intensity"
                           value="{{ (int)($settings['yellow_intensity'] ?? 20) }}"
-                          class="form-control-range">
+                          class="form-control-range"
+                          style="width: 100%;">
                       <small class="text-muted">
                         <span id="yellow_intensity_val">{{ (int)($settings['yellow_intensity'] ?? 20) }}</span>%
                       </small>
@@ -125,7 +126,8 @@
                           name="orange_intensity"
                           id="orange_intensity"
                           value="{{ (int)($settings['orange_intensity'] ?? ($settings['red_intensity'] ?? 25)) }}"
-                          class="form-control-range">
+                          class="form-control-range"
+                          style="width: 100%;">
                       <small class="text-muted">
                         <span id="orange_intensity_val">{{ (int)($settings['orange_intensity'] ?? ($settings['red_intensity'] ?? 25)) }}</span>%
                       </small>
@@ -161,7 +163,8 @@
                           name="red_intensity"
                           id="red_intensity"
                           value="{{ (int)($settings['red_intensity'] ?? ($settings['deep_red_intensity'] ?? 30)) }}"
-                          class="form-control-range">
+                          class="form-control-range"
+                          style="width: 100%;">
                       <small class="text-muted">
                         <span id="red_intensity_val">{{ (int)($settings['red_intensity'] ?? ($settings['deep_red_intensity'] ?? 30)) }}</span>%
                       </small>

@@ -9,7 +9,6 @@ class MailboxSettings
     const ALIAS = 'adamticketagingcolors';
 
     protected static $cache = [];
-    protected static $mergedCache = [];
 
     public static function defaults(): array
     {
@@ -65,10 +64,6 @@ class MailboxSettings
 
     public static function getMergedForMailbox(int $mailboxId): array
     {
-        if (isset(self::$mergedCache[$mailboxId])) {
-            return self::$mergedCache[$mailboxId];
-        }
-
         $merged = array_merge(self::defaults(), self::getMailboxSettings($mailboxId));
 
         // Backward compatibility: older versions stored *_days instead of *_value/unit.
@@ -142,15 +137,13 @@ class MailboxSettings
             'red_value','red_unit','red_intensity','red_color',
         ]));
 
-        self::$mergedCache[$mailboxId] = $merged;
-        return self::$mergedCache[$mailboxId];
+        return $merged;
     }
 
 
     public static function saveMailboxSettings(int $mailboxId, array $data): void
     {
         self::$cache[$mailboxId] = $data;
-        unset(self::$mergedCache[$mailboxId]);
         // Store as JSON for portability. Some installs may still return an array when reading.
         \Option::set(self::optionKey($mailboxId), json_encode($data));
     }
@@ -166,32 +159,17 @@ class MailboxSettings
             return 0;
         }
 
-        // O(1) weekday calculation (Mon–Fri), counting full days elapsed since the baseline day.
-        $start = $from->copy()->startOfDay();
+        $count = 0;
+        $cursor = $from->copy()->startOfDay();
         $end = $to->copy()->startOfDay();
 
-        $days = $start->diffInDays($end);
-        if ($days <= 0) {
-            return 0;
-        }
-
-        $fullWeeks = intdiv($days, 7);
-        $business = $fullWeeks * 5;
-        $remainder = $days % 7;
-
-        // ISO: 1 (Mon) .. 7 (Sun)
-        $startIso = (int)$start->dayOfWeekIso;
-        for ($i = 1; $i <= $remainder; $i++) {
-            $iso = $startIso + $i;
-            $iso = $iso % 7;
-            if ($iso === 0) {
-                $iso = 7;
-            }
-            if ($iso <= 5) {
-                $business++;
+        // Count full days passed since the baseline day.
+        while ($cursor->lt($end)) {
+            $cursor->addDay();
+            if ($cursor->isWeekday() && $cursor->lte($end)) {
+                $count++;
             }
         }
-
-        return $business;
+        return $count;
     }
 }
