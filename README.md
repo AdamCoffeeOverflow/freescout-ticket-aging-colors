@@ -3,6 +3,13 @@
 
 Author: AdamCoffeeOverflow
 
+<a href="https://www.buymeacoffee.com/zrhfqt992nt" target="_blank" rel="noopener noreferrer">
+  <img
+    src="https://img.buymeacoffee.com/button-api/?text=Buy%20me%20coffee!&emoji=%E2%98%95&slug=zrhfqt992nt&button_colour=FF5F5F&font_colour=ffffff&font_family=Inter&outline_colour=000000&coffee_colour=FFDD00"
+    alt="Buy me a coffee"
+  />
+</a>
+
 FreeScout module that adds a **left-side aging accent bar** on each conversation row in the **ticket list** so you can quickly spot **Active** tickets that have been waiting too long.
 
 ![Recording2026-02-10122818-ezgif com-loop-count](https://github.com/user-attachments/assets/f58c38de-805b-40bb-8c71-5402ee73ad7d)
