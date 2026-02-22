@@ -1,0 +1,41 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare module folder
+        run: |
+          set -e
+          rm -rf dist AdamTicketAgingColors
+          mkdir -p dist/AdamTicketAgingColors
+          rsync -a --delete \
+            --exclude '.github' \
+            --exclude '.git' \
+            --exclude '.gitignore' \
+            --exclude '.gitattributes' \
+            --exclude '*.zip' \
+            ./ dist/AdamTicketAgingColors/
+
+      - name: Build release zip
+        run: |
+          set -e
+          cd dist
+          zip -r ../AdamTicketAgingColors.zip AdamTicketAgingColors
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: AdamTicketAgingColors.zip
+          generate_release_notes: true
