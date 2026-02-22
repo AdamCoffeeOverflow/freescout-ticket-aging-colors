@@ -54,14 +54,50 @@
             <label class="col-sm-2 control-label">{{ __('Rules') }}</label>
             <div class="col-sm-10">
               <p class="block-help">
-                {{ __('Configure up to three escalation levels. Each level applies when the selected time threshold is exceeded.') }}
+                {{ __('Configure a "New" level (green) and up to three escalation levels. Green applies while the selected time threshold is not yet exceeded (elapsed ≤ threshold). Yellow/Orange/Red apply when their thresholds are exceeded (elapsed > threshold).') }}
               </p>
             <p class="text-muted">
               {{ __('Row colors are fixed to a built-in palette for maximum theme compatibility. ') }}
             </p>
 
               <div class="row">
-                <div class="col-sm-4">
+                <div class="col-sm-3">
+                  <h4 class="margin-top-0">{{ __('New') }}</h4>
+
+                  <label>{{ __('Threshold') }}</label>
+                  <div class="row">
+                    <div class="col-xs-6">
+                      <input type="number" min="0" class="form-control"
+                          name="green_value"
+                          value="{{ (int)($settings['green_value'] ?? 1) }}">
+                    </div>
+                    <div class="col-xs-6">
+                      <select name="green_unit" class="form-control">
+                        @php $u = $settings['green_unit'] ?? 'business_days'; @endphp
+                        <option value="minutes" @if($u==='minutes')selected="selected"@endif>{{ __('Minutes') }}</option>
+                        <option value="hours" @if($u==='hours')selected="selected"@endif>{{ __('Hours') }}</option>
+                        <option value="calendar_days" @if($u==='calendar_days')selected="selected"@endif>{{ __('Calendar days') }}</option>
+                        <option value="business_days" @if($u==='business_days')selected="selected"@endif>{{ __('Business days') }}</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <label class="margin-top">{{ __('Color Intensity') }}</label>
+                  <div class="row">
+                    <div class="col-xs-12">
+                      <input type="range" min="5" max="100" step="5"
+                          name="green_intensity"
+                          id="green_intensity"
+                          value="{{ (int)($settings['green_intensity'] ?? 15) }}"
+                          class="form-control-range">
+                      <small class="text-muted">
+                        <span id="green_intensity_val">{{ (int)($settings['green_intensity'] ?? 15) }}</span>%
+                      </small>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-sm-3">
                   <h4 class="margin-top-0">{{ __('Level 1') }}</h4>
 
                   <label>{{ __('Threshold') }}</label>
@@ -97,7 +133,7 @@
                   </div>
 </div>
 
-                <div class="col-sm-4">
+                <div class="col-sm-3">
                   <h4 class="margin-top-0">{{ __('Level 2') }}</h4>
 
                   <label>{{ __('Threshold') }}</label>
@@ -133,7 +169,7 @@
                   </div>
 </div>
 
-                <div class="col-sm-4">
+                <div class="col-sm-3">
                   <h4 class="margin-top-0">{{ __('Level 3') }}</h4>
 
                   <label>{{ __('Threshold') }}</label>

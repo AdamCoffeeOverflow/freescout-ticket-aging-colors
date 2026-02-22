@@ -20,31 +20,51 @@ class AdamTicketAgingColorsServiceProvider extends ServiceProvider
 
     public function boot()
     {
+        $this->registerConfig();
+        $this->registerViews();
+        $this->registerRoutes();
+        $this->registerAssets();
+        $this->registerHooks();
+    }
+
+    public function register()
+    {
+        // No bindings required.
+    }
+
+    protected function registerConfig(): void
+    {
+        $this->mergeConfigFrom(__DIR__.'/../Config/config.php', self::ALIAS);
+    }
+
+    protected function registerViews(): void
+    {
         $this->loadViewsFrom(__DIR__.'/../Resources/views', self::ALIAS);
+    }
 
-        // Routes
+    protected function registerRoutes(): void
+    {
         $this->loadRoutesFrom(__DIR__.'/../Http/routes.php');
+    }
 
-        // Assets
-        // Assets (use Minify helpers per FreeScout dev guide)
-        \Eventy::addAction('layout.head', function() {
-            try {
-                echo \Minify::stylesheet([
-                    \Module::getPublicPath(self::ALIAS).'/css/module.css',
-                ]);
-            } catch (\Throwable $e) {
-                // Fail silently to avoid breaking the UI if Minify is unavailable
-            }
+    /**
+     * Register assets via FreeScout filters so the core build/minify pipeline can manage caching.
+     */
+    protected function registerAssets(): void
+    {
+        \Eventy::addFilter('stylesheets', function($styles) {
+            $styles[] = \Module::getPublicPath(self::ALIAS).'/css/module.css';
+            return $styles;
         });
-        \Eventy::addAction('layout.footer', function() {
-            try {
-                echo \Minify::javascript([
-                    \Module::getPublicPath(self::ALIAS).'/js/module.js',
-                ]);
-            } catch (\Throwable $e) {
-                // Fail silently
-            }
+
+        \Eventy::addFilter('javascripts', function($javascripts) {
+            $javascripts[] = \Module::getPublicPath(self::ALIAS).'/js/module.js';
+            return $javascripts;
         });
+    }
+
+    protected function registerHooks(): void
+    {
 
         // Add a mailbox left menu entry (separate page like other mailbox settings).
         \Eventy::addAction('mailboxes.settings.menu', function($mailbox) {
@@ -60,6 +80,32 @@ class AdamTicketAgingColorsServiceProvider extends ServiceProvider
         // Priority 30: run after most modules (ex: CustomFields) so we don't lose preloaded props.
         \Eventy::addFilter('conversations_table.preload_table_data', function($conversations) {
             if (!$conversations || !count($conversations)) {
+                return $conversations;
+            }
+
+            // Fast exit: if none of the mailboxes on this page has the module enabled,
+            // skip any additional DB work.
+            $mailboxIds = [];
+            foreach ($conversations as $c) {
+                if (!isset($c->mailbox_id)) {
+                    continue;
+                }
+                $mailboxIds[(int)$c->mailbox_id] = true;
+            }
+
+            $anyEnabled = false;
+            foreach (array_keys($mailboxIds) as $mid) {
+                try {
+                    $s = MailboxSettings::getMergedForMailbox((int)$mid);
+                    if (!empty($s['enabled'])) {
+                        $anyEnabled = true;
+                        break;
+                    }
+                } catch (\Throwable $e) {
+                    // ignore
+                }
+            }
+            if (!$anyEnabled) {
                 return $conversations;
             }
 
@@ -88,7 +134,7 @@ class AdamTicketAgingColorsServiceProvider extends ServiceProvider
             $waitingSinceField = null;
             if ($folderId) {
                 try {
-                    $folder = \App\Folder::find($folderId);
+                    $folder = \App\Folder::find((int)$folderId);
                     if ($folder) {
                         $waitingSinceField = $folder->getWaitingSinceField();
                     }
@@ -180,6 +226,8 @@ class AdamTicketAgingColorsServiceProvider extends ServiceProvider
                     return $elapsedCache[$unit];
                 };
 
+                $l0v = (int)($settings['green_value'] ?? 1);
+                $l0u = (string)($settings['green_unit'] ?? 'business_days');
                 $l1v = (int)($settings['yellow_value'] ?? 2);
                 $l1u = (string)($settings['yellow_unit'] ?? 'business_days');
                 $l2v = (int)($settings['orange_value'] ?? 4);
@@ -194,6 +242,8 @@ class AdamTicketAgingColorsServiceProvider extends ServiceProvider
                     $cls = 'adamtac-row adamtac-orange';
                 } elseif ($l1v > 0 && $elapsedForUnit($l1u) > $l1v) {
                     $cls = 'adamtac-row adamtac-yellow';
+                } elseif ($l0v > 0 && $elapsedForUnit($l0u) <= $l0v) {
+                    $cls = 'adamtac-row adamtac-green';
                 }
 
                 // IMPORTANT: this hook is an *Action* used inside the <tr class="..."> attribute.
@@ -212,10 +262,5 @@ class AdamTicketAgingColorsServiceProvider extends ServiceProvider
             // This is lightweight; actual values are read from options when needed.
             echo view(self::ALIAS.'::layouts/css_vars')->render();
         }, 10, 1);
-    }
-
-    public function register()
-    {
-        // No-op
     }
 }

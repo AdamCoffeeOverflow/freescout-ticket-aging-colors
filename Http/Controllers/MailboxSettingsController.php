@@ -27,10 +27,33 @@ class MailboxSettingsController extends Controller
         $mailbox = Mailbox::findOrFail($id);
         $this->authorize('update', $mailbox);
 
+        // Validate user input (keep permissive upper bounds to avoid surprising admins).
+        $request->validate([
+            'baseline' => 'nullable|in:status_change,waiting_since,last_activity',
+            'green_value' => 'nullable|integer|min:0|max:100000',
+            'yellow_value' => 'nullable|integer|min:0|max:100000',
+            'orange_value' => 'nullable|integer|min:0|max:100000',
+            'red_value' => 'nullable|integer|min:0|max:100000',
+            'green_unit' => 'nullable|in:minutes,hours,business_days,calendar_days',
+            'yellow_unit' => 'nullable|in:minutes,hours,business_days,calendar_days',
+            'orange_unit' => 'nullable|in:minutes,hours,business_days,calendar_days',
+            'red_unit' => 'nullable|in:minutes,hours,business_days,calendar_days',
+            'green_intensity' => 'nullable|integer|min:5|max:100',
+            'yellow_intensity' => 'nullable|integer|min:5|max:100',
+            'orange_intensity' => 'nullable|integer|min:5|max:100',
+            'red_intensity' => 'nullable|integer|min:5|max:100',
+        ]);
+
         $data = [
 
-            'enabled' => (bool)$request->get('enabled'),
+            'enabled' => (bool)($request->input('enabled') ?? false),
+            // Laravel version compatibility: Request::boolean() may not exist on older FreeScout stacks.
             'baseline' => $request->get('baseline', 'status_change'),
+
+            // Level 0 (green/new) applies when elapsed time is <= threshold
+            'green_value' => max(0, (int)$request->get('green_value', 1)),
+            'green_unit'  => $request->get('green_unit', 'business_days'),
+            'green_intensity' => max(5, min(100, (int)$request->get('green_intensity', 15))),
 
             // Level thresholds (value + unit + intensity)
             'yellow_value' => max(0, (int)$request->get('yellow_value', (int)$request->get('yellow_days', 2))),
@@ -47,20 +70,14 @@ class MailboxSettingsController extends Controller
             'red_intensity' => max(5, min(100, (int)$request->get('red_intensity', (int)$request->get('deep_red_intensity', 30)))),
 
             // Fixed palette (UI no longer exposes color pickers)
+            'green_color' => MailboxSettings::defaults()['green_color'],
             'yellow_color' => MailboxSettings::defaults()['yellow_color'],
             'orange_color' => MailboxSettings::defaults()['orange_color'],
             'red_color' => MailboxSettings::defaults()['red_color'],
 
         ];
-        // Validate units
-        $allowedUnits = ['minutes','hours','business_days','calendar_days'];
-        foreach (['yellow_unit','orange_unit','red_unit'] as $key) {
-            if (!in_array($data[$key], $allowedUnits)) {
-                $data[$key] = 'business_days';
-            }
-        }
 
-// Normalize baseline values
+        // Normalize baseline values (defensive; validation already covers the common cases).
         $allowed = ['status_change','last_activity','waiting_since'];
         if (!in_array($data['baseline'], $allowed)) {
             $data['baseline'] = 'status_change';

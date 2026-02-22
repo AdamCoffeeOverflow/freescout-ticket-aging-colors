@@ -10,6 +10,8 @@
 
 /* Defaults (overridden per-mailbox by Resources/views/layouts/css_vars.blade.php) */
 :root {
+    --adamtac-green: #4CAF50;
+    --adamtac-green-rgb: 76, 175, 80;
     --adamtac-yellow: #FFC107;
     --adamtac-yellow-rgb: 255, 193, 7;
     --adamtac-orange: #FF9800;
@@ -18,6 +20,7 @@
     --adamtac-red-rgb: 183, 28, 28;
 
     /* 0–100 (used as max opacity) */
+    --adamtac-green-intensity: 15;
     --adamtac-yellow-intensity: 20;
     --adamtac-orange-intensity: 25;
     --adamtac-red-intensity: 30;
@@ -31,10 +34,6 @@
   width: 100%;
 }
 
-
-
-
-
 /* Ensure the indicator column can actually display a 5px bar */
 tr.adamtac-row td.conv-current {
   width: 5px !important;
@@ -46,6 +45,11 @@ tr.adamtac-row td.conv-current {
 @keyframes adamtac-bar-yellow {
   0%, 100% { background-color: rgba(var(--adamtac-yellow-rgb), 0); }
   50%      { background-color: rgba(var(--adamtac-yellow-rgb), calc(var(--adamtac-yellow-intensity) / 100)); }
+}
+
+@keyframes adamtac-bar-green {
+  0%, 100% { background-color: rgba(var(--adamtac-green-rgb), 0); }
+  50%      { background-color: rgba(var(--adamtac-green-rgb), calc(var(--adamtac-green-intensity) / 100)); }
 }
 
 @keyframes adamtac-bar-red {
@@ -94,6 +98,11 @@ tr.adamtac-row.adamtac-yellow + tr.cf-conv-row td::before {
   animation: adamtac-bar-yellow 3s ease-in-out infinite;
 }
 
+tr.adamtac-row.adamtac-green td.conv-current::before,
+tr.adamtac-row.adamtac-green + tr.cf-conv-row td::before {
+  animation: adamtac-bar-green 3.2s ease-in-out infinite;
+}
+
 tr.adamtac-row.adamtac-orange td.conv-current::before,
 tr.adamtac-row.adamtac-orange + tr.cf-conv-row td::before {
   animation: adamtac-bar-orange 2.5s ease-in-out infinite;
@@ -112,6 +121,8 @@ tr.adamtac-row th:not(.conv-current) {
 
 /* Respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
+  tr.adamtac-row.adamtac-green td.conv-current::before,
+  tr.adamtac-row.adamtac-green + tr.cf-conv-row td::before,
   tr.adamtac-row.adamtac-yellow td.conv-current::before,
   tr.adamtac-row.adamtac-orange td.conv-current::before,
   tr.adamtac-row.adamtac-red td.conv-current::before,
@@ -119,6 +130,11 @@ tr.adamtac-row th:not(.conv-current) {
   tr.adamtac-row.adamtac-orange + tr.cf-conv-row td::before,
   tr.adamtac-row.adamtac-red + tr.cf-conv-row td::before {
     animation: none !important;
+  }
+
+  tr.adamtac-row.adamtac-green td.conv-current::before,
+  tr.adamtac-row.adamtac-green + tr.cf-conv-row td::before {
+    background-color: rgba(var(--adamtac-green-rgb), calc(var(--adamtac-green-intensity) / 100)) !important;
   }
 
   tr.adamtac-row.adamtac-yellow td.conv-current::before,

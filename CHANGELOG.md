@@ -17,6 +17,14 @@ All notable changes to **Ticket Aging Colors** (AdamTicketAgingColors) for FreeS
 ### Notes
 - No database migrations. Settings are stored via FreeScout options, prefixed with `adamticketagingcolors.*`.
 
+## [1.0.8] - 2026-02-21
+
+### Added
+- New **"New" (green)** level, applied when elapsed time is **≤** its threshold.
+
+### Changed
+- Settings page now shows **4 levels** (Green + Yellow/Orange/Red).
+
 ## [1.0.1] - 2026-02-06
 
 ### Changed

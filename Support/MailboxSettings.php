@@ -18,6 +18,11 @@ class MailboxSettings
             'enabled'        => (bool)\Config::get(self::ALIAS.'.options.enabled.default', true),
             'baseline'       => \Config::get(self::ALIAS.'.options.baseline.default', 'status_change'),
 
+            // Level 0 (green/new) applies when elapsed time is <= threshold.
+            'green_value'    => (int)\Config::get(self::ALIAS.'.options.green_value.default', 1),
+            'green_unit'     => \Config::get(self::ALIAS.'.options.green_unit.default', 'business_days'),
+            'green_intensity'=> (int)\Config::get(self::ALIAS.'.options.green_intensity.default', 15),
+
             // Level 1/2/3 escalation (value + unit + intensity). Default units are business days.
             'yellow_value'   => (int)\Config::get(self::ALIAS.'.options.yellow_value.default', 2),
             'yellow_unit'    => \Config::get(self::ALIAS.'.options.yellow_unit.default', 'business_days'),
@@ -29,7 +34,8 @@ class MailboxSettings
             'red_unit'          => \Config::get(self::ALIAS.'.options.red_unit.default', 'business_days'),
             'red_intensity'     => (int)\Config::get(self::ALIAS.'.options.red_intensity.default', 30),
 
-            // Colors (Yellow → Orange → Red)
+            // Colors (Green → Yellow → Orange → Red)
+            'green_color'    => \Config::get(self::ALIAS.'.options.green_color.default', '#4CAF50'),
             'yellow_color'   => \Config::get(self::ALIAS.'.options.yellow_color.default', '#FFC107'),
             'orange_color'   => \Config::get(self::ALIAS.'.options.orange_color.default', '#FF9800'),
             'red_color'      => \Config::get(self::ALIAS.'.options.red_color.default', '#B71C1C'),
@@ -90,7 +96,7 @@ class MailboxSettings
         }
 
         // Units defaults.
-        foreach (['yellow_unit','orange_unit','red_unit'] as $k) {
+        foreach (['green_unit','yellow_unit','orange_unit','red_unit'] as $k) {
             if (!isset($merged[$k]) || !$merged[$k]) {
                 $merged[$k] = 'business_days';
             }
@@ -114,22 +120,22 @@ class MailboxSettings
         }
 
         // Sanitize numbers
-        foreach (['yellow_value','orange_value','red_value'] as $k) {
+        foreach (['green_value','yellow_value','orange_value','red_value'] as $k) {
             $merged[$k] = max(0, (int)($merged[$k] ?? 0));
         }
 
         // Sanitize intensity values (5-100%)
-        foreach (['yellow_intensity','orange_intensity','red_intensity'] as $k) {
+        foreach (['green_intensity','yellow_intensity','orange_intensity','red_intensity'] as $k) {
             $val = (int)($merged[$k] ?? 0);
             if ($val < 5) {
-                $val = ($k === 'yellow_intensity') ? 20 : (($k === 'orange_intensity') ? 25 : 30);
+                $val = ($k === 'green_intensity') ? 15 : (($k === 'yellow_intensity') ? 20 : (($k === 'orange_intensity') ? 25 : 30));
             }
             $merged[$k] = max(5, min(100, $val));
         }
 
         // Sanitize units
         $allowedUnits = ['minutes','hours','business_days','calendar_days'];
-        foreach (['yellow_unit','orange_unit','red_unit'] as $k) {
+        foreach (['green_unit','yellow_unit','orange_unit','red_unit'] as $k) {
             $u = (string)($merged[$k] ?? 'business_days');
             $merged[$k] = in_array($u, $allowedUnits) ? $u : 'business_days';
         }
@@ -137,6 +143,7 @@ class MailboxSettings
         // Reduce to only the settings used by the current module version (keeps read-compat but avoids writing legacy junk).
         $merged = array_intersect_key($merged, array_flip([
             'enabled','baseline',
+            'green_value','green_unit','green_intensity','green_color',
             'yellow_value','yellow_unit','yellow_intensity','yellow_color',
             'orange_value','orange_unit','orange_intensity','orange_color',
             'red_value','red_unit','red_intensity','red_color',
@@ -152,7 +159,7 @@ class MailboxSettings
         self::$cache[$mailboxId] = $data;
         unset(self::$mergedCache[$mailboxId]);
         // Store as JSON for portability. Some installs may still return an array when reading.
-        \Option::set(self::optionKey($mailboxId), json_encode($data));
+        \Option::set(self::optionKey($mailboxId), json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
     }
 
     /**

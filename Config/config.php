@@ -15,6 +15,10 @@ return [
         'baseline'  => ['default' => 'status_change'],
 
         // Thresholds (value + unit). Units: minutes, hours, calendar_days, business_days
+        // Level 0 (green) is "new" and applies when elapsed time is LESS THAN OR EQUAL to its threshold.
+        'green_value'       => ['default' => 1],
+        'green_unit'        => ['default' => 'business_days'],
+        'green_intensity'   => ['default' => 15],
         'yellow_value'   => ['default' => 2],
         'yellow_unit'    => ['default' => 'business_days'],
         'yellow_intensity' => ['default' => 20],
@@ -30,7 +34,8 @@ return [
         'red_days'      => ['default' => 4],        // legacy level 2 (now: orange)
         'deep_red_days' => ['default' => 6],        // legacy level 3 (now: red)
 
-        // Fixed palette (Yellow → Orange → Red)
+        // Fixed palette (Green → Yellow → Orange → Red)
+        'green_color'    => ['default' => '#4CAF50'],  // Material Green 500
         'yellow_color'   => ['default' => '#FFC107'],  // Material Yellow 500
         'orange_color'   => ['default' => '#FF9800'],  // Material Orange 500
         'red_color'      => ['default' => '#B71C1C'],  // Material Red 900

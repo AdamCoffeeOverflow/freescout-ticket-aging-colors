@@ -6,10 +6,8 @@
         $folderId = request()->route('folder_id') ?? request()->get('folder_id') ?? request()->input('folder_id');
         if ($folderId) {
             try {
-                $folder = \App\Folder::find((int)$folderId);
-                if ($folder && !empty($folder->mailbox_id)) {
-                    $mboxId = (int)$folder->mailbox_id;
-                }
+                // Minimal query (mailbox_id only) to keep the layout hook lightweight.
+                $mboxId = (int)(\App\Folder::where('id', (int)$folderId)->value('mailbox_id') ?: 0);
             } catch (\Throwable $e) {
                 // ignore
             }
@@ -54,12 +52,15 @@
 @if (!empty($vars) && !empty($vars['enabled']))
     <style>
         :root {
+            --adamtac-green: {{ $vars['green_color'] ?? '#4CAF50' }};
+            --adamtac-green-rgb: {{ $hexToRgb($vars['green_color'] ?? '#4CAF50') ?? '76, 175, 80' }};
             --adamtac-yellow: {{ $vars['yellow_color'] ?? '#FFC107' }};
             --adamtac-yellow-rgb: {{ $hexToRgb($vars['yellow_color'] ?? '#FFC107') ?? '255, 193, 7' }};
             --adamtac-orange: {{ $vars['orange_color'] ?? '#FF9800' }};
             --adamtac-orange-rgb: {{ $hexToRgb($vars['orange_color'] ?? '#FF9800') ?? '255, 152, 0' }};
             --adamtac-red: {{ $vars['red_color'] ?? '#B71C1C' }};
             --adamtac-red-rgb: {{ $hexToRgb($vars['red_color'] ?? '#B71C1C') ?? '183, 28, 28' }};
+            --adamtac-green-intensity: {{ $vars['green_intensity'] ?? 15 }};
             --adamtac-yellow-intensity: {{ $vars['yellow_intensity'] ?? 20 }};
             --adamtac-orange-intensity: {{ $vars['orange_intensity'] ?? 25 }};
             --adamtac-red-intensity: {{ $vars['red_intensity'] ?? 30 }};
