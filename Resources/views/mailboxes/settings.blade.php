@@ -42,9 +42,14 @@
             <div class="col-sm-6">
               <select name="baseline" id="baseline" class="form-control input-sized">
                 <option value="status_change" @if (($settings['baseline'] ?? '') === 'status_change')selected="selected"@endif>{{ __('Last status change (recommended)') }}</option>
-                <option value="waiting_since" @if (($settings['baseline'] ?? '') === 'waiting_since')selected="selected"@endif>{{ __('Waiting since (folder setting)') }}</option>              </select>
+                <option value="last_activity" @if (($settings['baseline'] ?? '') === 'last_activity')selected="selected"@endif>{{ __('Last activity (legacy mode)') }}</option>
+                <option value="waiting_since" @if (($settings['baseline'] ?? '') === 'waiting_since')selected="selected"@endif>{{ __('Waiting since (folder setting)') }}</option>
+              </select>
               <p class="block-help">
                 {{ __('Waiting since uses the folder\'s waiting-since timestamp when available. If the folder has no waiting-since field, rows won\'t be color-coded for that baseline.') }}
+              </p>
+              <p class="block-help text-muted">
+                {{ __('Last activity is kept for legacy compatibility. New setups should prefer Last status change for predictable aging behavior.') }}
               </p>
             </div>
           </div>
