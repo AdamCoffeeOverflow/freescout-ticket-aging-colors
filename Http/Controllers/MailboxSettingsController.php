@@ -22,6 +22,16 @@ class MailboxSettingsController extends Controller
         ]);
     }
 
+    /**
+     * Persist mailbox aging color settings from the request and redirect to the mailbox settings page.
+     *
+     * Validates input, normalizes legacy payload keys, saves merged settings for the mailbox,
+     * and flashes a success message before redirecting.
+     *
+     * @param int $id The mailbox ID to update.
+     * @param \Illuminate\Http\Request $request Incoming request containing settings payload.
+     * @return \Illuminate\Http\RedirectResponse Redirect to the mailbox settings route for the given mailbox.
+     */
     public function save($id, Request $request)
     {
         $mailbox = Mailbox::findOrFail($id);
