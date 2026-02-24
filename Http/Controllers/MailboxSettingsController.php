@@ -44,6 +44,8 @@ class MailboxSettingsController extends Controller
             'red_intensity' => 'nullable|integer|min:5|max:100',
         ]);
 
+        $defaults = MailboxSettings::defaults();
+
         $data = [
 
             'enabled' => (bool)($request->input('enabled') ?? false),
@@ -59,21 +61,22 @@ class MailboxSettingsController extends Controller
             'yellow_value' => max(0, (int)$request->get('yellow_value', (int)$request->get('yellow_days', 2))),
             'yellow_unit'  => $request->get('yellow_unit', 'business_days'),
             'yellow_intensity' => max(5, min(100, (int)$request->get('yellow_intensity', 20))),
-            // Level 2 (orange) - legacy form fields: red_* or red_days
-            'orange_value'    => max(0, (int)$request->get('orange_value', (int)$request->get('red_value', (int)$request->get('red_days', 4)))),
-            'orange_unit'     => $request->get('orange_unit', $request->get('red_unit', 'business_days')),
-            'orange_intensity' => max(5, min(100, (int)$request->get('orange_intensity', (int)$request->get('red_intensity', 25)))),
+            // Level 2 (orange): modern key is orange_*. Legacy level-2 payloads only provided red_days.
+            // Do not fall back to modern red_* keys here; those now belong to Level 3.
+            'orange_value'    => max(0, (int)$request->get('orange_value', (int)$request->get('red_days', (int)$defaults['orange_value']))),
+            'orange_unit'     => $request->get('orange_unit', $defaults['orange_unit']),
+            'orange_intensity' => max(5, min(100, (int)$request->get('orange_intensity', (int)$defaults['orange_intensity']))),
 
-            // Level 3 (red) - legacy form fields: deep_red_* or deep_red_days
+            // Level 3 (red): modern key is red_*. Legacy level-3 payloads used deep_red_* / deep_red_days.
             'red_value' => max(0, (int)$request->get('red_value', (int)$request->get('deep_red_value', (int)$request->get('deep_red_days', 6)))),
             'red_unit'  => $request->get('red_unit', $request->get('deep_red_unit', 'business_days')),
             'red_intensity' => max(5, min(100, (int)$request->get('red_intensity', (int)$request->get('deep_red_intensity', 30)))),
 
             // Fixed palette (UI no longer exposes color pickers)
-            'green_color' => MailboxSettings::defaults()['green_color'],
-            'yellow_color' => MailboxSettings::defaults()['yellow_color'],
-            'orange_color' => MailboxSettings::defaults()['orange_color'],
-            'red_color' => MailboxSettings::defaults()['red_color'],
+            'green_color' => $defaults['green_color'],
+            'yellow_color' => $defaults['yellow_color'],
+            'orange_color' => $defaults['orange_color'],
+            'red_color' => $defaults['red_color'],
 
         ];
 
