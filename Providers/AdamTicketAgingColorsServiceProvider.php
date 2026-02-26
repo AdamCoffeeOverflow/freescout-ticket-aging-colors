@@ -65,7 +65,6 @@ class AdamTicketAgingColorsServiceProvider extends ServiceProvider
 
     protected function registerHooks(): void
     {
-
         // Add a mailbox left menu entry (separate page like other mailbox settings).
         \Eventy::addAction('mailboxes.settings.menu', function($mailbox) {
             // Permission check: mimic core menu behavior
@@ -75,7 +74,6 @@ class AdamTicketAgingColorsServiceProvider extends ServiceProvider
             echo view(self::ALIAS.'::mailboxes/menu_item', ['mailbox' => $mailbox])->render();
         });
 
-        // Preload data for table rows (last status change timestamps and folder waiting_since field).
         // Preload data for conversations table.
         // Priority 30: run after most modules (ex: CustomFields) so we don't lose preloaded props.
         \Eventy::addFilter('conversations_table.preload_table_data', function($conversations) {
@@ -94,12 +92,20 @@ class AdamTicketAgingColorsServiceProvider extends ServiceProvider
             }
 
             $anyEnabled = false;
+            $needsStatusChangeBaseline = false;
+            $needsWaitingSinceBaseline = false;
             foreach (array_keys($mailboxIds) as $mid) {
                 try {
                     $s = MailboxSettings::getMergedForMailbox((int)$mid);
                     if (!empty($s['enabled'])) {
                         $anyEnabled = true;
-                        break;
+                        $baseline = $s['baseline'] ?? 'status_change';
+                        if ($baseline === 'status_change') {
+                            $needsStatusChangeBaseline = true;
+                        }
+                        if ($baseline === 'waiting_since') {
+                            $needsWaitingSinceBaseline = true;
+                        }
                     }
                 } catch (\Throwable $e) {
                     // ignore
@@ -115,24 +121,26 @@ class AdamTicketAgingColorsServiceProvider extends ServiceProvider
                 $ids[] = $c->id;
             }
 
-            // Last status change timestamp per conversation (max lineitem status_changed)
-            $rows = DB::table('threads')
-                ->select('conversation_id', DB::raw('MAX(created_at) as last_status_changed_at'))
-                ->whereIn('conversation_id', $ids)
-                ->where('type', Thread::TYPE_LINEITEM)
-                ->where('action_type', Thread::ACTION_TYPE_STATUS_CHANGED)
-                ->groupBy('conversation_id')
-                ->get();
-
             $map = [];
-            foreach ($rows as $r) {
-                $map[(int)$r->conversation_id] = $r->last_status_changed_at;
+            if ($needsStatusChangeBaseline) {
+                // Last status change timestamp per conversation (max lineitem status_changed)
+                $rows = DB::table('threads')
+                    ->select('conversation_id', DB::raw('MAX(created_at) as last_status_changed_at'))
+                    ->whereIn('conversation_id', $ids)
+                    ->where('type', Thread::TYPE_LINEITEM)
+                    ->where('action_type', Thread::ACTION_TYPE_STATUS_CHANGED)
+                    ->groupBy('conversation_id')
+                    ->get();
+
+                foreach ($rows as $r) {
+                    $map[(int)$r->conversation_id] = $r->last_status_changed_at;
+                }
             }
 
             // Waiting-since field for this folder (if any).
-            $folderId = request()->route('folder_id') ?? request()->get('folder_id') ?? request()->input('folder_id');
             $waitingSinceField = null;
-            if ($folderId) {
+            $folderId = request()->route('folder_id') ?? request()->get('folder_id') ?? request()->input('folder_id');
+            if ($needsWaitingSinceBaseline && $folderId) {
                 try {
                     $folder = \App\Folder::find((int)$folderId);
                     if ($folder) {
@@ -141,6 +149,12 @@ class AdamTicketAgingColorsServiceProvider extends ServiceProvider
                 } catch (\Throwable $e) {
                     // ignore
                 }
+            }
+            if ($waitingSinceField && !is_string($waitingSinceField)) {
+                $waitingSinceField = null;
+            }
+            if ($waitingSinceField && !preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $waitingSinceField)) {
+                $waitingSinceField = null;
             }
 
             foreach ($conversations as $c) {
@@ -152,14 +166,17 @@ class AdamTicketAgingColorsServiceProvider extends ServiceProvider
         }, 30, 1);
 
         // Add a row class based on mailbox settings and thresholds.
-        // Add a row class based on mailbox settings and thresholds.
         // Priority 10: run early (and echo a trailing space) to avoid class concatenation with modules
         // that echo without leading space.
         \Eventy::addAction('conversations_table.row_class', function($conversation) {
             try {
-                static $now = null;
-                if ($now === null) {
+                // Keep caches request-scoped to avoid cross-request data retention
+                // under long-lived workers (e.g. Octane/Swoole).
+                $request = request();
+                $now = $request->attributes->get('adamtac_now');
+                if (!$now) {
                     $now = Carbon::now();
+                    $request->attributes->set('adamtac_now', $now);
                 }
 
                 // Only apply to Active tickets
@@ -168,7 +185,12 @@ class AdamTicketAgingColorsServiceProvider extends ServiceProvider
                 }
 
                 $mailboxId = (int)$conversation->mailbox_id;
-                $settings = MailboxSettings::getMergedForMailbox($mailboxId);
+                $settingsCache = $request->attributes->get('adamtac_mailbox_settings_cache', []);
+                if (!isset($settingsCache[$mailboxId])) {
+                    $settingsCache[$mailboxId] = MailboxSettings::getMergedForMailbox($mailboxId);
+                    $request->attributes->set('adamtac_mailbox_settings_cache', $settingsCache);
+                }
+                $settings = $settingsCache[$mailboxId];
 
                 if (empty($settings['enabled'])) {
                     return;
@@ -185,17 +207,24 @@ class AdamTicketAgingColorsServiceProvider extends ServiceProvider
                     }
                 } elseif ($baseline === 'waiting_since') {
                     $field = $conversation->adamtac_waiting_since_field ?? null;
-                    if ($field) {
-                        $from = $conversation->$field ?: $conversation->updated_at;
-                    } else {
-                        // If no waiting-since field for this folder, do not guess.
+                    if (!is_string($field) || !preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $field)) {
+                        // Defensive: invalid attribute key should never be used for dynamic access.
                         return;
+                    }
+
+                    // Prefer Eloquent's attribute API to avoid magic-property surprises.
+                    if (method_exists($conversation, 'getAttribute')) {
+                        $from = $conversation->getAttribute($field) ?: $conversation->updated_at;
+                    } else {
+                        $from = $conversation->$field ?: $conversation->updated_at;
                     }
                 } else { // last_activity (legacy option)
                     $from = $conversation->updated_at;
                 }
 
-                $from = $from ? Carbon::parse($from) : null;
+                if ($from && !($from instanceof Carbon)) {
+                    $from = Carbon::parse($from);
+                }
                 if (!$from) {
                     return;
                 }
