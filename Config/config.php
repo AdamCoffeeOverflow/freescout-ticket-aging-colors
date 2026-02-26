@@ -29,19 +29,10 @@ return [
         'red_unit'          => ['default' => 'business_days'],
         'red_intensity'     => ['default' => 30],
 
-        // Legacy keys (kept for backwards compatibility with earlier builds)
-        'yellow_days'   => ['default' => 2],
-        'red_days'      => ['default' => 4],        // legacy level 2 (now: orange)
-        'deep_red_days' => ['default' => 6],        // legacy level 3 (now: red)
-
         // Fixed palette (Green → Yellow → Orange → Red)
         'green_color'    => ['default' => '#4CAF50'],  // Material Green 500
         'yellow_color'   => ['default' => '#FFC107'],  // Material Yellow 500
         'orange_color'   => ['default' => '#FF9800'],  // Material Orange 500
         'red_color'      => ['default' => '#B71C1C'],  // Material Red 900
-
-        // Legacy palette keys (kept for backward compatibility)
-        'legacy_level2_color' => ['default' => '#FF9800'], // stored as red_color in older versions
-        'legacy_level3_color' => ['default' => '#B71C1C'], // stored as deep_red_color in older versions
     ],
 ];

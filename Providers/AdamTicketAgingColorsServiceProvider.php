@@ -152,7 +152,6 @@ class AdamTicketAgingColorsServiceProvider extends ServiceProvider
         }, 30, 1);
 
         // Add a row class based on mailbox settings and thresholds.
-        // Add a row class based on mailbox settings and thresholds.
         // Priority 10: run early (and echo a trailing space) to avoid class concatenation with modules
         // that echo without leading space.
         \Eventy::addAction('conversations_table.row_class', function($conversation) {
