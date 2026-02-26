@@ -75,24 +75,25 @@ class MailboxSettings
             return self::$mergedCache[$mailboxId];
         }
 
-        $merged = array_merge(self::defaults(), self::getMailboxSettings($mailboxId));
+        $raw = self::getMailboxSettings($mailboxId);
+        $merged = array_merge(self::defaults(), $raw);
 
         // Backward compatibility: older versions stored *_days instead of *_value/unit.
-        if (!isset($merged['yellow_value']) && isset($merged['yellow_days'])) {
-            $merged['yellow_value'] = (int)$merged['yellow_days'];
+        if (!array_key_exists('yellow_value', $raw) && array_key_exists('yellow_days', $raw)) {
+            $merged['yellow_value'] = (int)$raw['yellow_days'];
         }
         // Legacy: "red_*" was level 2 (orange), "deep_red_*" was level 3 (red)
-        if (!isset($merged['orange_value']) && isset($merged['red_value'])) {
-            $merged['orange_value'] = (int)$merged['red_value'];
+        if (!array_key_exists('orange_value', $raw) && array_key_exists('red_value', $raw)) {
+            $merged['orange_value'] = (int)$raw['red_value'];
         }
-        if (!isset($merged['red_value']) && isset($merged['deep_red_value'])) {
-            $merged['red_value'] = (int)$merged['deep_red_value'];
+        if (!array_key_exists('red_value', $raw) && array_key_exists('deep_red_value', $raw)) {
+            $merged['red_value'] = (int)$raw['deep_red_value'];
         }
-        if (!isset($merged['orange_value']) && isset($merged['red_days'])) {
-            $merged['orange_value'] = (int)$merged['red_days'];
+        if (!array_key_exists('orange_value', $raw) && array_key_exists('red_days', $raw)) {
+            $merged['orange_value'] = (int)$raw['red_days'];
         }
-        if (!isset($merged['red_value']) && isset($merged['deep_red_days'])) {
-            $merged['red_value'] = (int)$merged['deep_red_days'];
+        if (!array_key_exists('red_value', $raw) && array_key_exists('deep_red_days', $raw)) {
+            $merged['red_value'] = (int)$raw['deep_red_days'];
         }
 
         // Units defaults.
@@ -103,20 +104,20 @@ class MailboxSettings
         }
 
         // Legacy intensities.
-        if (!isset($merged['orange_intensity']) && isset($merged['red_intensity'])) {
-            $merged['orange_intensity'] = (int)$merged['red_intensity'];
+        if (!array_key_exists('orange_intensity', $raw) && array_key_exists('red_intensity', $raw)) {
+            $merged['orange_intensity'] = (int)$raw['red_intensity'];
         }
-        if (!isset($merged['red_intensity']) && isset($merged['deep_red_intensity'])) {
-            $merged['red_intensity'] = (int)$merged['deep_red_intensity'];
+        if (!array_key_exists('red_intensity', $raw) && array_key_exists('deep_red_intensity', $raw)) {
+            $merged['red_intensity'] = (int)$raw['deep_red_intensity'];
         }
 
         // Legacy palette keys.
-        if (!isset($merged['orange_color']) && !empty($merged['red_color'])) {
+        if (!array_key_exists('orange_color', $raw) && !empty($raw['red_color'])) {
             // old "red_color" was orange
-            $merged['orange_color'] = (string)$merged['red_color'];
+            $merged['orange_color'] = (string)$raw['red_color'];
         }
-        if (!isset($merged['red_color']) && !empty($merged['deep_red_color'])) {
-            $merged['red_color'] = (string)$merged['deep_red_color'];
+        if (!array_key_exists('red_color', $raw) && !empty($raw['deep_red_color'])) {
+            $merged['red_color'] = (string)$raw['deep_red_color'];
         }
 
         // Sanitize numbers
