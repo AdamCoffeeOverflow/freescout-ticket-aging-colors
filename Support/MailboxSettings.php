@@ -8,6 +8,24 @@ class MailboxSettings
 {
     const ALIAS = 'adamticketagingcolors';
 
+    protected static function decodeJsonCompat($value)
+    {
+        if (class_exists('\Helper') && method_exists('\Helper', 'jsonDecode')) {
+            return \Helper::jsonDecode($value, true);
+        }
+
+        return json_decode($value, true);
+    }
+
+    protected static function encodeJsonCompat(array $value)
+    {
+        if (class_exists('\Helper') && method_exists('\Helper', 'jsonEncodeUtf8')) {
+            return \Helper::jsonEncodeUtf8($value);
+        }
+
+        return json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    }
+
     protected static $cache = [];
     protected static $mergedCache = [];
 
@@ -59,7 +77,7 @@ class MailboxSettings
         if (is_array($raw)) {
             $data = $raw;
         } elseif (is_string($raw) && $raw !== '') {
-            $decoded = json_decode($raw, true);
+            $decoded = self::decodeJsonCompat($raw);
             $data = is_array($decoded) ? $decoded : [];
         } else {
             $data = [];
@@ -159,7 +177,7 @@ class MailboxSettings
         self::$cache[$mailboxId] = $data;
         unset(self::$mergedCache[$mailboxId]);
         // Store as JSON for portability. Some installs may still return an array when reading.
-        \Option::set(self::optionKey($mailboxId), json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+        \Option::set(self::optionKey($mailboxId), self::encodeJsonCompat($data));
     }
 
     /**
