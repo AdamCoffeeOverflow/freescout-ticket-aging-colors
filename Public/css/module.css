@@ -31,15 +31,23 @@
 
 /* Settings page only */
 .adamtac-settings input.form-control-range {
-  width: 100%;
+    width: 100%;
 }
 
-/* Ensure the indicator column can actually display a 5px bar */
-tr.adamtac-row td.conv-current {
-  width: 5px !important;
-  min-width: 5px !important;
-  padding-left: 0 !important;
-  padding-right: 0 !important;
+/* Hidden compatibility marker injected via conversations_table.before_subject. */
+.adamtac-row-marker {
+    display: none !important;
+}
+
+/* Ensure the indicator column can actually display a 5px bar.
+ * The direct-child fallback supports older/custom table markup if conv-current is absent.
+ */
+tr.adamtac-row td.conv-current,
+tr.adamtac-row > td:first-child {
+    min-width: 5px !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    width: 5px !important;
 }
 /* Breathing animations (apply only to the LEFT bar via td:first-child box-shadow) */
 @keyframes adamtac-bar-yellow {
@@ -69,13 +77,18 @@ tr.adamtac-row td.conv-current {
  */
 
 /* Main row indicator column becomes a positioning context for the bar */
-tr.adamtac-row td.conv-current { position: relative; background: transparent !important; }
+tr.adamtac-row td.conv-current,
+tr.adamtac-row > td:first-child {
+    background: transparent !important;
+    position: relative;
+}
 
 /* CustomFields extra row: every TD gets a left bar (matches the extra-row height) */
 tr.adamtac-row + tr.cf-conv-row td { position: relative; }
 
 /* Shared bar geometry */
 tr.adamtac-row td.conv-current::before,
+tr.adamtac-row > td:first-child::before,
 tr.adamtac-row + tr.cf-conv-row td::before {
   content: '';
   position: absolute;
@@ -88,27 +101,32 @@ tr.adamtac-row + tr.cf-conv-row td::before {
 
 /* Shared phase anchor (keeps both rows in-sync even if the cf row is injected later) */
 tr.adamtac-row td.conv-current::before,
+tr.adamtac-row > td:first-child::before,
 tr.adamtac-row + tr.cf-conv-row td::before {
   animation-delay: calc(-1s * var(--adamtac-sync));
 }
 
 /* Color + timing (MUST match between the main row and its extra row) */
 tr.adamtac-row.adamtac-yellow td.conv-current::before,
+tr.adamtac-row.adamtac-yellow > td:first-child::before,
 tr.adamtac-row.adamtac-yellow + tr.cf-conv-row td::before {
   animation: adamtac-bar-yellow 3s ease-in-out infinite;
 }
 
 tr.adamtac-row.adamtac-green td.conv-current::before,
+tr.adamtac-row.adamtac-green > td:first-child::before,
 tr.adamtac-row.adamtac-green + tr.cf-conv-row td::before {
   animation: adamtac-bar-green 3.2s ease-in-out infinite;
 }
 
 tr.adamtac-row.adamtac-orange td.conv-current::before,
+tr.adamtac-row.adamtac-orange > td:first-child::before,
 tr.adamtac-row.adamtac-orange + tr.cf-conv-row td::before {
   animation: adamtac-bar-orange 2.5s ease-in-out infinite;
 }
 
 tr.adamtac-row.adamtac-red td.conv-current::before,
+tr.adamtac-row.adamtac-red > td:first-child::before,
 tr.adamtac-row.adamtac-red + tr.cf-conv-row td::before {
   animation: adamtac-bar-red 2s ease-in-out infinite;
 }
@@ -122,31 +140,107 @@ tr.adamtac-row th:not(.conv-current) {
 /* Respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
   tr.adamtac-row.adamtac-green td.conv-current::before,
+  tr.adamtac-row.adamtac-green > td:first-child::before,
   tr.adamtac-row.adamtac-green + tr.cf-conv-row td::before,
   tr.adamtac-row.adamtac-yellow td.conv-current::before,
-  tr.adamtac-row.adamtac-orange td.conv-current::before,
-  tr.adamtac-row.adamtac-red td.conv-current::before,
+  tr.adamtac-row.adamtac-yellow > td:first-child::before,
   tr.adamtac-row.adamtac-yellow + tr.cf-conv-row td::before,
+  tr.adamtac-row.adamtac-orange td.conv-current::before,
+  tr.adamtac-row.adamtac-orange > td:first-child::before,
   tr.adamtac-row.adamtac-orange + tr.cf-conv-row td::before,
+  tr.adamtac-row.adamtac-red td.conv-current::before,
+  tr.adamtac-row.adamtac-red > td:first-child::before,
   tr.adamtac-row.adamtac-red + tr.cf-conv-row td::before {
     animation: none !important;
   }
 
   tr.adamtac-row.adamtac-green td.conv-current::before,
+  tr.adamtac-row.adamtac-green > td:first-child::before,
   tr.adamtac-row.adamtac-green + tr.cf-conv-row td::before {
     background-color: rgba(var(--adamtac-green-rgb), calc(var(--adamtac-green-intensity) / 100)) !important;
   }
 
   tr.adamtac-row.adamtac-yellow td.conv-current::before,
+  tr.adamtac-row.adamtac-yellow > td:first-child::before,
   tr.adamtac-row.adamtac-yellow + tr.cf-conv-row td::before {
     background-color: rgba(var(--adamtac-yellow-rgb), calc(var(--adamtac-yellow-intensity) / 100)) !important;
   }
   tr.adamtac-row.adamtac-orange td.conv-current::before,
+  tr.adamtac-row.adamtac-orange > td:first-child::before,
   tr.adamtac-row.adamtac-orange + tr.cf-conv-row td::before {
     background-color: rgba(var(--adamtac-orange-rgb), calc(var(--adamtac-orange-intensity) / 100)) !important;
   }
   tr.adamtac-row.adamtac-red td.conv-current::before,
+  tr.adamtac-row.adamtac-red > td:first-child::before,
   tr.adamtac-row.adamtac-red + tr.cf-conv-row td::before {
     background-color: rgba(var(--adamtac-red-rgb), calc(var(--adamtac-red-intensity) / 100)) !important;
   }
+}
+
+/* Mobile conversation lists often hide or collapse the indicator/current column.
+ * Re-render the same aging bar on the visible subject cell so the indicator
+ * remains available on phones without relying on desktop-only table columns.
+ */
+@media (max-width: 767px) {
+    .table-conversations tr.adamtac-row td.conv-current::before,
+    .table-conversations tr.adamtac-row > td:first-child::before {
+        display: none;
+    }
+
+    .table-conversations tr.adamtac-row td.conv-subject {
+        padding-left: 12px !important;
+        position: relative;
+    }
+
+    .table-conversations tr.adamtac-row td.conv-subject::before {
+        animation-delay: calc(-1s * var(--adamtac-sync));
+        bottom: 0;
+        content: '';
+        left: 0;
+        pointer-events: none;
+        position: absolute;
+        top: 0;
+        width: 5px;
+    }
+
+    .table-conversations tr.adamtac-row.adamtac-green td.conv-subject::before {
+        animation: adamtac-bar-green 3.2s ease-in-out infinite;
+    }
+
+    .table-conversations tr.adamtac-row.adamtac-yellow td.conv-subject::before {
+        animation: adamtac-bar-yellow 3s ease-in-out infinite;
+    }
+
+    .table-conversations tr.adamtac-row.adamtac-orange td.conv-subject::before {
+        animation: adamtac-bar-orange 2.5s ease-in-out infinite;
+    }
+
+    .table-conversations tr.adamtac-row.adamtac-red td.conv-subject::before {
+        animation: adamtac-bar-red 2s ease-in-out infinite;
+    }
+}
+
+@media (max-width: 767px) and (prefers-reduced-motion: reduce) {
+    .table-conversations tr.adamtac-row.adamtac-green td.conv-subject::before,
+    .table-conversations tr.adamtac-row.adamtac-yellow td.conv-subject::before,
+    .table-conversations tr.adamtac-row.adamtac-orange td.conv-subject::before,
+    .table-conversations tr.adamtac-row.adamtac-red td.conv-subject::before {
+        animation: none !important;
+    }
+
+    .table-conversations tr.adamtac-row.adamtac-green td.conv-subject::before {
+        background-color: rgba(var(--adamtac-green-rgb), calc(var(--adamtac-green-intensity) / 100)) !important;
+    }
+
+    .table-conversations tr.adamtac-row.adamtac-yellow td.conv-subject::before {
+        background-color: rgba(var(--adamtac-yellow-rgb), calc(var(--adamtac-yellow-intensity) / 100)) !important;
+    }
+
+    .table-conversations tr.adamtac-row.adamtac-orange td.conv-subject::before {
+        background-color: rgba(var(--adamtac-orange-rgb), calc(var(--adamtac-orange-intensity) / 100)) !important;
+    }
+
+    .table-conversations tr.adamtac-row.adamtac-red td.conv-subject::before {
+        background-color: rgba(var(--adamtac-red-rgb), calc(var(--adamtac-red-intensity) / 100)) !important;
+    }
 }

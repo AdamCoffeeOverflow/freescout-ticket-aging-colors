@@ -63,6 +63,126 @@ class AdamTicketAgingColorsServiceProvider extends ServiceProvider
         });
     }
 
+    protected function getAgingRowClass($conversation): string
+    {
+        try {
+            // Keep caches request-scoped to avoid cross-request data retention under long-lived workers.
+            $request = request();
+            $now = $request->attributes->get('adamtac_now');
+            if (!$now) {
+                $now = Carbon::now();
+                $request->attributes->set('adamtac_now', $now);
+            }
+
+            // Only apply to Active tickets. Deleted/closed/spam/pending rows are intentionally ignored.
+            if (!$conversation || !method_exists($conversation, 'isActive') || !$conversation->isActive()) {
+                return '';
+            }
+
+            $mailboxId = (int)$conversation->mailbox_id;
+            if (!$mailboxId) {
+                return '';
+            }
+
+            $settingsCache = $request->attributes->get('adamtac_mailbox_settings_cache', []);
+            if (!isset($settingsCache[$mailboxId])) {
+                $settingsCache[$mailboxId] = MailboxSettings::getMergedForMailbox($mailboxId);
+                $request->attributes->set('adamtac_mailbox_settings_cache', $settingsCache);
+            }
+            $settings = $settingsCache[$mailboxId];
+
+            if (empty($settings['enabled'])) {
+                return '';
+            }
+
+            $baseline = $settings['baseline'] ?? 'status_change';
+            $from = null;
+
+            if ($baseline === 'status_change') {
+                $from = $conversation->adamtac_last_status_changed_at ?? null;
+                if (!$from) {
+                    // If no status-change line item exists, fall back to created_at.
+                    $from = $conversation->created_at;
+                }
+            } elseif ($baseline === 'waiting_since') {
+                $field = $conversation->adamtac_waiting_since_field ?? null;
+                if (!is_string($field) || !preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $field)) {
+                    // Defensive: invalid attribute key should never be used for dynamic access.
+                    return '';
+                }
+
+                // Prefer Eloquent's attribute API to avoid magic-property surprises.
+                if (method_exists($conversation, 'getAttribute')) {
+                    $from = $conversation->getAttribute($field) ?: $conversation->updated_at;
+                } else {
+                    $from = $conversation->$field ?: $conversation->updated_at;
+                }
+            } else {
+                // last_activity (legacy option)
+                $from = $conversation->updated_at;
+            }
+
+            if ($from && !($from instanceof Carbon)) {
+                $from = Carbon::parse($from);
+            }
+            if (!$from) {
+                return '';
+            }
+
+            // Determine elapsed time in a given unit.
+            $elapsedCache = [];
+            $elapsedForUnit = function(string $unit) use ($from, $now, &$elapsedCache): int {
+                if (isset($elapsedCache[$unit])) {
+                    return $elapsedCache[$unit];
+                }
+
+                switch ($unit) {
+                    case 'minutes':
+                        $elapsedCache[$unit] = $from->diffInMinutes($now);
+                        break;
+                    case 'hours':
+                        $elapsedCache[$unit] = $from->diffInHours($now);
+                        break;
+                    case 'calendar_days':
+                        $elapsedCache[$unit] = $from->diffInDays($now);
+                        break;
+                    case 'business_days':
+                    default:
+                        $elapsedCache[$unit] = MailboxSettings::businessDaysBetween($from, $now);
+                        break;
+                }
+
+                return $elapsedCache[$unit];
+            };
+
+            $l0v = (int)($settings['green_value'] ?? 1);
+            $l0u = (string)($settings['green_unit'] ?? 'business_days');
+            $l1v = (int)($settings['yellow_value'] ?? 2);
+            $l1u = (string)($settings['yellow_unit'] ?? 'business_days');
+            $l2v = (int)($settings['orange_value'] ?? 4);
+            $l2u = (string)($settings['orange_unit'] ?? 'business_days');
+            $l3v = (int)($settings['red_value'] ?? 6);
+            $l3u = (string)($settings['red_unit'] ?? 'business_days');
+
+            if ($l3v > 0 && $elapsedForUnit($l3u) > $l3v) {
+                return 'adamtac-row adamtac-red';
+            }
+            if ($l2v > 0 && $elapsedForUnit($l2u) > $l2v) {
+                return 'adamtac-row adamtac-orange';
+            }
+            if ($l1v > 0 && $elapsedForUnit($l1u) > $l1v) {
+                return 'adamtac-row adamtac-yellow';
+            }
+            if ($l0v > 0 && $elapsedForUnit($l0u) <= $l0v) {
+                return 'adamtac-row adamtac-green';
+            }
+        } catch (\Throwable $e) {
+            // The ticket table should never break because of the visual indicator.
+        }
+
+        return '';
+    }
+
     protected function registerHooks(): void
     {
         // Add a mailbox left menu entry (separate page like other mailbox settings).
@@ -165,124 +285,28 @@ class AdamTicketAgingColorsServiceProvider extends ServiceProvider
             return $conversations;
         }, 30, 1);
 
-        // Add a row class based on mailbox settings and thresholds.
-        // Priority 10: run early (and echo a trailing space) to avoid class concatenation with modules
-        // that echo without leading space.
+        // Newer FreeScout builds expose a row-class hook directly inside the <tr class="..."> attribute.
+        // Keep using it when present because it is the cleanest path and needs no JavaScript.
         \Eventy::addAction('conversations_table.row_class', function($conversation) {
-            try {
-                // Keep caches request-scoped to avoid cross-request data retention
-                // under long-lived workers (e.g. Octane/Swoole).
-                $request = request();
-                $now = $request->attributes->get('adamtac_now');
-                if (!$now) {
-                    $now = Carbon::now();
-                    $request->attributes->set('adamtac_now', $now);
-                }
+            $cls = $this->getAgingRowClass($conversation);
 
-                // Only apply to Active tickets
-                if (!$conversation || !$conversation->isActive()) {
-                    return;
-                }
-
-                $mailboxId = (int)$conversation->mailbox_id;
-                $settingsCache = $request->attributes->get('adamtac_mailbox_settings_cache', []);
-                if (!isset($settingsCache[$mailboxId])) {
-                    $settingsCache[$mailboxId] = MailboxSettings::getMergedForMailbox($mailboxId);
-                    $request->attributes->set('adamtac_mailbox_settings_cache', $settingsCache);
-                }
-                $settings = $settingsCache[$mailboxId];
-
-                if (empty($settings['enabled'])) {
-                    return;
-                }
-
-                $baseline = $settings['baseline'] ?? 'status_change';
-                $from = null;
-
-                if ($baseline === 'status_change') {
-                    $from = $conversation->adamtac_last_status_changed_at ?? null;
-                    if (!$from) {
-                        // If no status-change line item exists, fall back to created_at
-                        $from = $conversation->created_at;
-                    }
-                } elseif ($baseline === 'waiting_since') {
-                    $field = $conversation->adamtac_waiting_since_field ?? null;
-                    if (!is_string($field) || !preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $field)) {
-                        // Defensive: invalid attribute key should never be used for dynamic access.
-                        return;
-                    }
-
-                    // Prefer Eloquent's attribute API to avoid magic-property surprises.
-                    if (method_exists($conversation, 'getAttribute')) {
-                        $from = $conversation->getAttribute($field) ?: $conversation->updated_at;
-                    } else {
-                        $from = $conversation->$field ?: $conversation->updated_at;
-                    }
-                } else { // last_activity (legacy option)
-                    $from = $conversation->updated_at;
-                }
-
-                if ($from && !($from instanceof Carbon)) {
-                    $from = Carbon::parse($from);
-                }
-                if (!$from) {
-                    return;
-                }
-
-                // Determine elapsed time in a given unit.
-                $elapsedCache = [];
-                $elapsedForUnit = function(string $unit) use ($from, $now, &$elapsedCache): int {
-                    if (isset($elapsedCache[$unit])) {
-                        return $elapsedCache[$unit];
-                    }
-
-                    switch ($unit) {
-                        case 'minutes':
-                            $elapsedCache[$unit] = $from->diffInMinutes($now);
-                            break;
-                        case 'hours':
-                            $elapsedCache[$unit] = $from->diffInHours($now);
-                            break;
-                        case 'calendar_days':
-                            $elapsedCache[$unit] = $from->diffInDays($now);
-                            break;
-                        case 'business_days':
-                        default:
-                            $elapsedCache[$unit] = MailboxSettings::businessDaysBetween($from, $now);
-                            break;
-                    }
-
-                    return $elapsedCache[$unit];
-                };
-
-                $l0v = (int)($settings['green_value'] ?? 1);
-                $l0u = (string)($settings['green_unit'] ?? 'business_days');
-                $l1v = (int)($settings['yellow_value'] ?? 2);
-                $l1u = (string)($settings['yellow_unit'] ?? 'business_days');
-                $l2v = (int)($settings['orange_value'] ?? 4);
-                $l2u = (string)($settings['orange_unit'] ?? 'business_days');
-                $l3v = (int)($settings['red_value'] ?? 6);
-                $l3u = (string)($settings['red_unit'] ?? 'business_days');
-
-                $cls = '';
-                if ($l3v > 0 && $elapsedForUnit($l3u) > $l3v) {
-                    $cls = 'adamtac-row adamtac-red';
-                } elseif ($l2v > 0 && $elapsedForUnit($l2u) > $l2v) {
-                    $cls = 'adamtac-row adamtac-orange';
-                } elseif ($l1v > 0 && $elapsedForUnit($l1u) > $l1v) {
-                    $cls = 'adamtac-row adamtac-yellow';
-                } elseif ($l0v > 0 && $elapsedForUnit($l0u) <= $l0v) {
-                    $cls = 'adamtac-row adamtac-green';
-                }
-
-                // IMPORTANT: this hook is an *Action* used inside the <tr class="..."> attribute.
-                // Actions must echo output (return values are ignored).
-                if ($cls) {
-                    echo ' '.$cls.' ';
-                }
-            } catch (\Throwable $e) {
-                // no-op
+            // IMPORTANT: this hook is an *Action* used inside the <tr class="..."> attribute.
+            // Actions must echo output (return values are ignored).
+            if ($cls) {
+                echo ' '.$cls.' ';
             }
+        }, 10, 1);
+
+        // Compatibility fallback for released FreeScout builds where conversations_table.row_class
+        // is not available. This older hook exists in the table markup; JS reads this marker and
+        // applies the same row classes to the closest <tr>.
+        \Eventy::addAction('conversations_table.before_subject', function($conversation) {
+            $cls = $this->getAgingRowClass($conversation);
+            if (!$cls) {
+                return;
+            }
+
+            echo '<span class="adamtac-row-marker" data-adamtac-class="'.e($cls).'" aria-hidden="true"></span>';
         }, 10, 1);
 
         // Expose settings to the layout so CSS variables can be set per mailbox view.

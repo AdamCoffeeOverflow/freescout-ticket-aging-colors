@@ -26,9 +26,14 @@
     if ($mboxId) {
         try {
             $vars = \Modules\AdamTicketAgingColors\Support\MailboxSettings::getMergedForMailbox($mboxId);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $vars = null;
         }
+    }
+
+    $styleNonceAttr = '';
+    if (class_exists('\\Helper') && method_exists('\\Helper', 'cspNonceAttr')) {
+        $styleNonceAttr = \Helper::cspNonceAttr();
     }
 @endphp
 
@@ -50,7 +55,7 @@
 @endphp
 
 @if (!empty($vars) && !empty($vars['enabled']))
-    <style>
+    <style {!! $styleNonceAttr !!}>
         :root {
             --adamtac-green: {{ $vars['green_color'] ?? '#4CAF50' }};
             --adamtac-green-rgb: {{ $hexToRgb($vars['green_color'] ?? '#4CAF50') ?? '76, 175, 80' }};

@@ -19,7 +19,7 @@ FreeScout module that adds a **left-side aging accent bar** on each conversation
 
 - Applies **only** to tickets in **Active** status.
 - Does **not** apply to **Closed** tickets.
-- Adds a CSS-driven **accent bar** visible in conversation list.
+- Adds a CSS-driven **accent bar** visible in conversation list, including the mobile conversation list view.
 - Supports **four escalation levels** (New (level 0) / Level 1 / Level 2 / Level 3), each with:
   - Threshold (value + unit)
   - Color (Green, Yellow, Orange, Deep Red)
@@ -66,7 +66,8 @@ Settings are stored per mailbox using FreeScout options with the prefix:
 
 
 ### UI Compatibility
-- This module only styles the **indicator column** (`td.conv-current`) and does not modify `.conv-fader` or other table cells to avoid conflicts with themes and Custom Fields UI.
+- Desktop: this module styles the **indicator column** (`td.conv-current`) and does not modify `.conv-fader` to avoid conflicts with themes and Custom Fields UI.
+- Mobile: FreeScout may hide/collapse the indicator column, so the same left aging bar is rendered on the visible subject cell (`td.conv-subject`) below 768px.
 
 
 ## License
