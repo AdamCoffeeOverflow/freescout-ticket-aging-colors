@@ -164,13 +164,13 @@ class AdamTicketAgingColorsServiceProvider extends ServiceProvider
             $l3v = (int)($settings['red_value'] ?? 6);
             $l3u = (string)($settings['red_unit'] ?? 'business_days');
 
-            if ($l3v > 0 && $elapsedForUnit($l3u) > $l3v) {
+            if ($l3v > 0 && $elapsedForUnit($l3u) >= $l3v) {
                 return 'adamtac-row adamtac-red';
             }
-            if ($l2v > 0 && $elapsedForUnit($l2u) > $l2v) {
+            if ($l2v > 0 && $elapsedForUnit($l2u) >= $l2v) {
                 return 'adamtac-row adamtac-orange';
             }
-            if ($l1v > 0 && $elapsedForUnit($l1u) > $l1v) {
+            if ($l1v > 0 && $elapsedForUnit($l1u) >= $l1v) {
                 return 'adamtac-row adamtac-yellow';
             }
             if ($l0v > 0 && $elapsedForUnit($l0u) <= $l0v) {

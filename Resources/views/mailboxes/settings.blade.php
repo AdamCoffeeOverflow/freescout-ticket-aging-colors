@@ -136,7 +136,7 @@
                       </small>
                     </div>
                   </div>
-</div>
+                </div>
 
                 <div class="col-sm-3">
                   <h4 class="margin-top-0">{{ __('Level 2') }}</h4>
@@ -172,7 +172,7 @@
                       </small>
                     </div>
                   </div>
-</div>
+                </div>
 
                 <div class="col-sm-3">
                   <h4 class="margin-top-0">{{ __('Level 3') }}</h4>
@@ -212,12 +212,11 @@
               </div>
             </div>
           </div>
-</div>
 
           <div class="form-group">
             <div class="col-sm-6 col-sm-offset-2">
               <button type="submit" class="btn btn-primary">{{ __('Save') }}</button>
-</div>
+            </div>
           </div>
 </form>
 

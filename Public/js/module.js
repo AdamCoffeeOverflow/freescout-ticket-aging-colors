@@ -43,7 +43,16 @@
         for (var i = 0; i < markers.length; i++) {
             var marker = markers[i];
             var row = closestTag(marker, 'tr');
+            var cell = closestTag(marker, 'td') || closestTag(marker, 'th');
+
             safeAddAgingClasses(row, marker.getAttribute('data-adamtac-class'));
+
+            // Mobile/table themes can rename or hide core cells such as td.conv-subject.
+            // Mark the actual cell containing our hook marker so CSS has a stable anchor.
+            if (cell && cell.classList) {
+                cell.classList.add('adamtac-subject-cell');
+            }
+
             marker.setAttribute('data-adamtac-applied', '1');
         }
     }

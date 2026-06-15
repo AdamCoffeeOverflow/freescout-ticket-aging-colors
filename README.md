@@ -67,8 +67,14 @@ Settings are stored per mailbox using FreeScout options with the prefix:
 
 ### UI Compatibility
 - Desktop: this module styles the **indicator column** (`td.conv-current`) and does not modify `.conv-fader` to avoid conflicts with themes and Custom Fields UI.
-- Mobile: FreeScout may hide/collapse the indicator column, so the same left aging bar is rendered on the visible subject cell (`td.conv-subject`) below 768px.
+- Mobile: FreeScout may hide/collapse the indicator column, so the same left aging bar is rendered on the actual cell containing the module hook marker. This avoids relying only on core/theme class names such as `td.conv-subject`.
 
+
+### v1.1.6.1 hotfix compatibility notes
+- Hotfix release for the finalized 1.1.6 compatibility/mobile patch set.
+- Uses `conversations_table.before_subject` as the stable fallback injection point when a row-class hook is unavailable.
+- The JavaScript fallback adds the row classes and marks the real subject cell so mobile CSS can render the bar even when core/theme classes change.
+- Escalation thresholds are inclusive: Level 1/2/3 apply once elapsed time is greater than or equal to the configured threshold.
 
 ## License
 
