@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title_full', __('Ticket Aging Colors').' - '.$mailbox->name)
+@section('title_full', __('adamticketagingcolors::messages.title').' - '.$mailbox->name)
 
 @section('sidebar')
   @include('partials/sidebar_menu_toggle')
@@ -10,7 +10,7 @@
 @section('content')
 
   <div class="section-heading">
-    {{ __('Ticket Aging Colors') }}
+    {{ __('adamticketagingcolors::messages.title') }}
   </div>
 
   @include('partials/flash_messages')
@@ -23,7 +23,7 @@
           {{ csrf_field() }}
 
           <div class="form-group">
-            <label for="enabled" class="col-sm-2 control-label">{{ __('Enabled') }}</label>
+            <label for="enabled" class="col-sm-2 control-label">{{ __('adamticketagingcolors::messages.enabled') }}</label>
             <div class="col-sm-6">
               <div class="controls">
                 <div class="onoffswitch-wrap">
@@ -31,45 +31,61 @@
                     <input type="checkbox" name="enabled" value="1" id="enabled" class="onoffswitch-checkbox" @if (!empty($settings['enabled']))checked="checked"@endif>
                     <label class="onoffswitch-label" for="enabled"></label>
                   </div>
-                  <i class="glyphicon glyphicon-info-sign icon-info icon-info-inline" data-toggle="popover" data-trigger="hover" data-html="true" data-placement="left" data-title="{{ __('Ticket Aging Colors') }}" data-content="{{ __('Applies only to Active tickets and resets automatically when the ticket status changes. Closed tickets are never color-coded.') }}"></i>
+                  <i class="glyphicon glyphicon-info-sign icon-info icon-info-inline" data-toggle="popover" data-trigger="hover" data-html="true" data-placement="left" data-title="{{ __('adamticketagingcolors::messages.title') }}" data-content="{{ __('adamticketagingcolors::messages.enabled_help') }}"></i>
                 </div>
               </div>
             </div>
           </div>
 
           <div class="form-group">
-            <label for="baseline" class="col-sm-2 control-label">{{ __('Start counting from') }}</label>
+            <label for="pulse_enabled" class="col-sm-2 control-label">{{ __('adamticketagingcolors::messages.pulse_effect') }}</label>
+            <div class="col-sm-6">
+              <div class="controls">
+                <div class="onoffswitch-wrap">
+                  <div class="onoffswitch">
+                    <input type="checkbox" name="pulse_enabled" value="1" id="pulse_enabled" class="onoffswitch-checkbox" @if (!empty($settings['pulse_enabled']))checked="checked"@endif>
+                    <label class="onoffswitch-label" for="pulse_enabled"></label>
+                  </div>
+                </div>
+                <p class="block-help">
+                  {{ __('adamticketagingcolors::messages.pulse_help') }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="baseline" class="col-sm-2 control-label">{{ __('adamticketagingcolors::messages.baseline') }}</label>
             <div class="col-sm-6">
               <select name="baseline" id="baseline" class="form-control input-sized">
-                <option value="status_change" @if (($settings['baseline'] ?? '') === 'status_change')selected="selected"@endif>{{ __('Last status change (recommended)') }}</option>
-                <option value="last_activity" @if (($settings['baseline'] ?? '') === 'last_activity')selected="selected"@endif>{{ __('Last activity (legacy mode)') }}</option>
-                <option value="waiting_since" @if (($settings['baseline'] ?? '') === 'waiting_since')selected="selected"@endif>{{ __('Waiting since (folder setting)') }}</option>
+                <option value="status_change" @if (($settings['baseline'] ?? '') === 'status_change')selected="selected"@endif>{{ __('adamticketagingcolors::messages.baseline_status_change') }}</option>
+                <option value="last_activity" @if (($settings['baseline'] ?? '') === 'last_activity')selected="selected"@endif>{{ __('adamticketagingcolors::messages.baseline_last_activity') }}</option>
+                <option value="waiting_since" @if (($settings['baseline'] ?? '') === 'waiting_since')selected="selected"@endif>{{ __('adamticketagingcolors::messages.baseline_waiting_since') }}</option>
               </select>
               <p class="block-help">
-                {{ __('Waiting since uses the folder\'s waiting-since timestamp when available. If the folder has no waiting-since field, rows won\'t be color-coded for that baseline.') }}
+                {{ __('adamticketagingcolors::messages.waiting_since_help') }}
               </p>
               <p class="block-help text-muted">
-                {{ __('Last activity is kept for legacy compatibility. New setups should prefer Last status change for predictable aging behavior.') }}
+                {{ __('adamticketagingcolors::messages.last_activity_help') }}
               </p>
             </div>
           </div>
 
-          
           <div class="form-group">
-            <label class="col-sm-2 control-label">{{ __('Rules') }}</label>
+            <label class="col-sm-2 control-label">{{ __('adamticketagingcolors::messages.rules') }}</label>
             <div class="col-sm-10">
               <p class="block-help">
-                {{ __('Configure a "New" level (green) and up to three escalation levels. Green applies while the selected time threshold is not yet exceeded (elapsed ≤ threshold). Yellow/Orange/Red apply when their thresholds are exceeded (elapsed > threshold).') }}
+                {{ __('adamticketagingcolors::messages.rules_help') }}
               </p>
-            <p class="text-muted">
-              {{ __('Row colors are fixed to a built-in palette for maximum theme compatibility. ') }}
-            </p>
+              <p class="text-muted">
+                {{ __('adamticketagingcolors::messages.fixed_palette_help') }}
+              </p>
 
               <div class="row">
                 <div class="col-sm-3">
-                  <h4 class="margin-top-0">{{ __('New') }}</h4>
+                  <h4 class="margin-top-0">{{ __('adamticketagingcolors::messages.new') }}</h4>
 
-                  <label>{{ __('Threshold') }}</label>
+                  <label>{{ __('adamticketagingcolors::messages.threshold') }}</label>
                   <div class="row">
                     <div class="col-xs-6">
                       <input type="number" min="0" class="form-control"
@@ -79,15 +95,15 @@
                     <div class="col-xs-6">
                       <select name="green_unit" class="form-control">
                         @php $u = $settings['green_unit'] ?? 'business_days'; @endphp
-                        <option value="minutes" @if($u==='minutes')selected="selected"@endif>{{ __('Minutes') }}</option>
-                        <option value="hours" @if($u==='hours')selected="selected"@endif>{{ __('Hours') }}</option>
-                        <option value="calendar_days" @if($u==='calendar_days')selected="selected"@endif>{{ __('Calendar days') }}</option>
-                        <option value="business_days" @if($u==='business_days')selected="selected"@endif>{{ __('Business days') }}</option>
+                        <option value="minutes" @if($u==='minutes')selected="selected"@endif>{{ __('adamticketagingcolors::messages.minutes') }}</option>
+                        <option value="hours" @if($u==='hours')selected="selected"@endif>{{ __('adamticketagingcolors::messages.hours') }}</option>
+                        <option value="calendar_days" @if($u==='calendar_days')selected="selected"@endif>{{ __('adamticketagingcolors::messages.calendar_days') }}</option>
+                        <option value="business_days" @if($u==='business_days')selected="selected"@endif>{{ __('adamticketagingcolors::messages.business_days') }}</option>
                       </select>
                     </div>
                   </div>
 
-                  <label class="margin-top">{{ __('Color Intensity') }}</label>
+                  <label class="margin-top">{{ __('adamticketagingcolors::messages.color_intensity') }}</label>
                   <div class="row">
                     <div class="col-xs-12">
                       <input type="range" min="5" max="100" step="5"
@@ -103,9 +119,9 @@
                 </div>
 
                 <div class="col-sm-3">
-                  <h4 class="margin-top-0">{{ __('Level 1') }}</h4>
+                  <h4 class="margin-top-0">{{ __('adamticketagingcolors::messages.level_1') }}</h4>
 
-                  <label>{{ __('Threshold') }}</label>
+                  <label>{{ __('adamticketagingcolors::messages.threshold') }}</label>
                   <div class="row">
                     <div class="col-xs-6">
                       <input type="number" min="0" class="form-control"
@@ -115,15 +131,15 @@
                     <div class="col-xs-6">
                       <select name="yellow_unit" class="form-control">
                         @php $u = $settings['yellow_unit'] ?? 'business_days'; @endphp
-                        <option value="minutes" @if($u==='minutes')selected="selected"@endif>{{ __('Minutes') }}</option>
-                        <option value="hours" @if($u==='hours')selected="selected"@endif>{{ __('Hours') }}</option>
-                        <option value="calendar_days" @if($u==='calendar_days')selected="selected"@endif>{{ __('Calendar days') }}</option>
-                        <option value="business_days" @if($u==='business_days')selected="selected"@endif>{{ __('Business days') }}</option>
+                        <option value="minutes" @if($u==='minutes')selected="selected"@endif>{{ __('adamticketagingcolors::messages.minutes') }}</option>
+                        <option value="hours" @if($u==='hours')selected="selected"@endif>{{ __('adamticketagingcolors::messages.hours') }}</option>
+                        <option value="calendar_days" @if($u==='calendar_days')selected="selected"@endif>{{ __('adamticketagingcolors::messages.calendar_days') }}</option>
+                        <option value="business_days" @if($u==='business_days')selected="selected"@endif>{{ __('adamticketagingcolors::messages.business_days') }}</option>
                       </select>
                     </div>
                   </div>
 
-                  <label class="margin-top">{{ __('Color Intensity') }}</label>
+                  <label class="margin-top">{{ __('adamticketagingcolors::messages.color_intensity') }}</label>
                   <div class="row">
                     <div class="col-xs-12">
                       <input type="range" min="5" max="100" step="5"
@@ -139,9 +155,9 @@
                 </div>
 
                 <div class="col-sm-3">
-                  <h4 class="margin-top-0">{{ __('Level 2') }}</h4>
+                  <h4 class="margin-top-0">{{ __('adamticketagingcolors::messages.level_2') }}</h4>
 
-                  <label>{{ __('Threshold') }}</label>
+                  <label>{{ __('adamticketagingcolors::messages.threshold') }}</label>
                   <div class="row">
                     <div class="col-xs-6">
                       <input type="number" min="0" class="form-control"
@@ -151,15 +167,15 @@
                     <div class="col-xs-6">
                       <select name="orange_unit" class="form-control">
                         @php $u = $settings['orange_unit'] ?? ($settings['red_unit'] ?? 'business_days'); @endphp
-                        <option value="minutes" @if($u==='minutes')selected="selected"@endif>{{ __('Minutes') }}</option>
-                        <option value="hours" @if($u==='hours')selected="selected"@endif>{{ __('Hours') }}</option>
-                        <option value="calendar_days" @if($u==='calendar_days')selected="selected"@endif>{{ __('Calendar days') }}</option>
-                        <option value="business_days" @if($u==='business_days')selected="selected"@endif>{{ __('Business days') }}</option>
+                        <option value="minutes" @if($u==='minutes')selected="selected"@endif>{{ __('adamticketagingcolors::messages.minutes') }}</option>
+                        <option value="hours" @if($u==='hours')selected="selected"@endif>{{ __('adamticketagingcolors::messages.hours') }}</option>
+                        <option value="calendar_days" @if($u==='calendar_days')selected="selected"@endif>{{ __('adamticketagingcolors::messages.calendar_days') }}</option>
+                        <option value="business_days" @if($u==='business_days')selected="selected"@endif>{{ __('adamticketagingcolors::messages.business_days') }}</option>
                       </select>
                     </div>
                   </div>
 
-                  <label class="margin-top">{{ __('Color Intensity') }}</label>
+                  <label class="margin-top">{{ __('adamticketagingcolors::messages.color_intensity') }}</label>
                   <div class="row">
                     <div class="col-xs-12">
                       <input type="range" min="5" max="100" step="5"
@@ -175,9 +191,9 @@
                 </div>
 
                 <div class="col-sm-3">
-                  <h4 class="margin-top-0">{{ __('Level 3') }}</h4>
+                  <h4 class="margin-top-0">{{ __('adamticketagingcolors::messages.level_3') }}</h4>
 
-                  <label>{{ __('Threshold') }}</label>
+                  <label>{{ __('adamticketagingcolors::messages.threshold') }}</label>
                   <div class="row">
                     <div class="col-xs-6">
                       <input type="number" min="0" class="form-control"
@@ -187,15 +203,15 @@
                     <div class="col-xs-6">
                       <select name="red_unit" class="form-control">
                         @php $u = $settings['red_unit'] ?? ($settings['deep_red_unit'] ?? 'business_days'); @endphp
-                        <option value="minutes" @if($u==='minutes')selected="selected"@endif>{{ __('Minutes') }}</option>
-                        <option value="hours" @if($u==='hours')selected="selected"@endif>{{ __('Hours') }}</option>
-                        <option value="calendar_days" @if($u==='calendar_days')selected="selected"@endif>{{ __('Calendar days') }}</option>
-                        <option value="business_days" @if($u==='business_days')selected="selected"@endif>{{ __('Business days') }}</option>
+                        <option value="minutes" @if($u==='minutes')selected="selected"@endif>{{ __('adamticketagingcolors::messages.minutes') }}</option>
+                        <option value="hours" @if($u==='hours')selected="selected"@endif>{{ __('adamticketagingcolors::messages.hours') }}</option>
+                        <option value="calendar_days" @if($u==='calendar_days')selected="selected"@endif>{{ __('adamticketagingcolors::messages.calendar_days') }}</option>
+                        <option value="business_days" @if($u==='business_days')selected="selected"@endif>{{ __('adamticketagingcolors::messages.business_days') }}</option>
                       </select>
                     </div>
                   </div>
 
-                  <label class="margin-top">{{ __('Color Intensity') }}</label>
+                  <label class="margin-top">{{ __('adamticketagingcolors::messages.color_intensity') }}</label>
                   <div class="row">
                     <div class="col-xs-12">
                       <input type="range" min="5" max="100" step="5"
@@ -215,7 +231,7 @@
 
           <div class="form-group">
             <div class="col-sm-6 col-sm-offset-2">
-              <button type="submit" class="btn btn-primary">{{ __('Save') }}</button>
+              <button type="submit" class="btn btn-primary">{{ __('adamticketagingcolors::messages.save') }}</button>
             </div>
           </div>
 </form>

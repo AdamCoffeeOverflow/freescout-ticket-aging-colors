@@ -7,6 +7,9 @@ return [
     'options' => [
 
         'enabled'   => ['default' => true],
+        // Keep the existing animated behavior on upgrades unless a mailbox
+        // explicitly opts into the static accent bar.
+        'pulse_enabled' => ['default' => true],
 
         // Baseline for aging:
         // - status_change (recommended): last status-changed line item, falls back to ticket creation time

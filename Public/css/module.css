@@ -99,36 +99,46 @@ tr.adamtac-row + tr.cf-conv-row td::before {
   pointer-events: none;
 }
 
-/* Shared phase anchor (keeps both rows in-sync even if the cf row is injected later) */
-tr.adamtac-row td.conv-current::before,
-tr.adamtac-row > td:first-child::before,
-tr.adamtac-row + tr.cf-conv-row td::before {
-  animation-delay: calc(-1s * var(--adamtac-sync));
-}
-
 /* Color + timing (MUST match between the main row and its extra row) */
 tr.adamtac-row.adamtac-yellow td.conv-current::before,
 tr.adamtac-row.adamtac-yellow > td:first-child::before,
 tr.adamtac-row.adamtac-yellow + tr.cf-conv-row td::before {
+  --adamtac-bar-intensity: var(--adamtac-yellow-intensity);
+  --adamtac-bar-rgb: var(--adamtac-yellow-rgb);
   animation: adamtac-bar-yellow 3s ease-in-out infinite;
 }
 
 tr.adamtac-row.adamtac-green td.conv-current::before,
 tr.adamtac-row.adamtac-green > td:first-child::before,
 tr.adamtac-row.adamtac-green + tr.cf-conv-row td::before {
+  --adamtac-bar-intensity: var(--adamtac-green-intensity);
+  --adamtac-bar-rgb: var(--adamtac-green-rgb);
   animation: adamtac-bar-green 3.2s ease-in-out infinite;
 }
 
 tr.adamtac-row.adamtac-orange td.conv-current::before,
 tr.adamtac-row.adamtac-orange > td:first-child::before,
 tr.adamtac-row.adamtac-orange + tr.cf-conv-row td::before {
+  --adamtac-bar-intensity: var(--adamtac-orange-intensity);
+  --adamtac-bar-rgb: var(--adamtac-orange-rgb);
   animation: adamtac-bar-orange 2.5s ease-in-out infinite;
 }
 
 tr.adamtac-row.adamtac-red td.conv-current::before,
 tr.adamtac-row.adamtac-red > td:first-child::before,
 tr.adamtac-row.adamtac-red + tr.cf-conv-row td::before {
+  --adamtac-bar-intensity: var(--adamtac-red-intensity);
+  --adamtac-bar-rgb: var(--adamtac-red-rgb);
   animation: adamtac-bar-red 2s ease-in-out infinite;
+}
+
+/* Declare the phase after the animation shorthand so the shorthand cannot
+ * reset animation-delay back to zero.
+ */
+tr.adamtac-row td.conv-current::before,
+tr.adamtac-row > td:first-child::before,
+tr.adamtac-row + tr.cf-conv-row td::before {
+  animation-delay: calc(-1s * var(--adamtac-sync));
 }
 
 /* Ensure we never tint the whole row (except the conv-current bar) */
@@ -197,7 +207,6 @@ tr.adamtac-row th:not(.conv-current) {
     tr.adamtac-row td.conv-subject::before,
     tr.adamtac-row td.adamtac-subject-cell::before,
     tr.adamtac-row th.adamtac-subject-cell::before {
-        animation-delay: calc(-1s * var(--adamtac-sync));
         bottom: 0;
         content: '';
         left: 0;
@@ -210,25 +219,39 @@ tr.adamtac-row th:not(.conv-current) {
     tr.adamtac-row.adamtac-green td.conv-subject::before,
     tr.adamtac-row.adamtac-green td.adamtac-subject-cell::before,
     tr.adamtac-row.adamtac-green th.adamtac-subject-cell::before {
+        --adamtac-bar-intensity: var(--adamtac-green-intensity);
+        --adamtac-bar-rgb: var(--adamtac-green-rgb);
         animation: adamtac-bar-green 3.2s ease-in-out infinite;
     }
 
     tr.adamtac-row.adamtac-yellow td.conv-subject::before,
     tr.adamtac-row.adamtac-yellow td.adamtac-subject-cell::before,
     tr.adamtac-row.adamtac-yellow th.adamtac-subject-cell::before {
+        --adamtac-bar-intensity: var(--adamtac-yellow-intensity);
+        --adamtac-bar-rgb: var(--adamtac-yellow-rgb);
         animation: adamtac-bar-yellow 3s ease-in-out infinite;
     }
 
     tr.adamtac-row.adamtac-orange td.conv-subject::before,
     tr.adamtac-row.adamtac-orange td.adamtac-subject-cell::before,
     tr.adamtac-row.adamtac-orange th.adamtac-subject-cell::before {
+        --adamtac-bar-intensity: var(--adamtac-orange-intensity);
+        --adamtac-bar-rgb: var(--adamtac-orange-rgb);
         animation: adamtac-bar-orange 2.5s ease-in-out infinite;
     }
 
     tr.adamtac-row.adamtac-red td.conv-subject::before,
     tr.adamtac-row.adamtac-red td.adamtac-subject-cell::before,
     tr.adamtac-row.adamtac-red th.adamtac-subject-cell::before {
+        --adamtac-bar-intensity: var(--adamtac-red-intensity);
+        --adamtac-bar-rgb: var(--adamtac-red-rgb);
         animation: adamtac-bar-red 2s ease-in-out infinite;
+    }
+
+    tr.adamtac-row td.conv-subject::before,
+    tr.adamtac-row td.adamtac-subject-cell::before,
+    tr.adamtac-row th.adamtac-subject-cell::before {
+        animation-delay: calc(-1s * var(--adamtac-sync));
     }
 }
 
@@ -270,5 +293,25 @@ tr.adamtac-row th:not(.conv-current) {
     tr.adamtac-row.adamtac-red td.adamtac-subject-cell::before,
     tr.adamtac-row.adamtac-red th.adamtac-subject-cell::before {
         background-color: rgba(var(--adamtac-red-rgb), calc(var(--adamtac-red-intensity) / 100)) !important;
+    }
+}
+
+/* Optional per-mailbox static mode. The active color rules above expose the
+ * row-specific RGB and intensity values on each pseudo-element, allowing one
+ * compact override to cover every color without duplicating the palette.
+ */
+tr.adamtac-row.adamtac-no-pulse td.conv-current::before,
+tr.adamtac-row.adamtac-no-pulse > td:first-child::before,
+tr.adamtac-row.adamtac-no-pulse + tr.cf-conv-row td::before {
+  animation: none !important;
+  background-color: rgba(var(--adamtac-bar-rgb), calc(var(--adamtac-bar-intensity) / 100)) !important;
+}
+
+@media (max-width: 767px) {
+    tr.adamtac-row.adamtac-no-pulse td.conv-subject::before,
+    tr.adamtac-row.adamtac-no-pulse td.adamtac-subject-cell::before,
+    tr.adamtac-row.adamtac-no-pulse th.adamtac-subject-cell::before {
+        animation: none !important;
+        background-color: rgba(var(--adamtac-bar-rgb), calc(var(--adamtac-bar-intensity) / 100)) !important;
     }
 }

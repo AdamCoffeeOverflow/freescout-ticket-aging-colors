@@ -14,3 +14,4 @@ Route::group([
     Route::post('/mailbox/settings/{id}/ticket-aging-colors', 'MailboxSettingsController@save')
         ->name('adamticketagingcolors.mailboxes.settings.save');
 });
+

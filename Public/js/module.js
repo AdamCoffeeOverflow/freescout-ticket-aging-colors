@@ -22,6 +22,7 @@
 
         var allowed = {
             'adamtac-row': true,
+            'adamtac-no-pulse': true,
             'adamtac-green': true,
             'adamtac-yellow': true,
             'adamtac-orange': true,

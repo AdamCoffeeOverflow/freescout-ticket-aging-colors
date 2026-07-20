@@ -20,10 +20,12 @@ FreeScout module that adds a **left-side aging accent bar** on each conversation
 - Applies **only** to tickets in **Active** status.
 - Does **not** apply to **Closed** tickets.
 - Adds a CSS-driven **accent bar** visible in conversation list, including the mobile conversation list view.
+- Lets each mailbox keep the default breathing animation or display a static accent bar.
+- Includes English and Russian translations for the module settings UI.
 - Supports **four escalation levels** (New (level 0) / Level 1 / Level 2 / Level 3), each with:
   - Threshold (value + unit)
   - Color (Green, Yellow, Orange, Deep Red)
-  - Intensity (0–100) controlling the pulse opacity
+  - Intensity (0–100) controlling the animated or static bar opacity
 
  <img width="366" height="505" alt="Screenshot 2026-02-10 122918" src="https://github.com/user-attachments/assets/d02295fc-8df9-495d-9f5d-f546030a9810" />
 
@@ -50,13 +52,17 @@ Go to: **Mailboxes → (select mailbox) → Settings → Ticket Aging Colors**
 Settings are stored per mailbox using FreeScout options with the prefix:
 - `adamticketagingcolors.mailbox_settings.{mailbox_id}`
 
+The **Breathing / pulse effect** setting is enabled by default for backward compatibility. Disable it to keep the same color and configured intensity without animation.
+
 ## Install
 1. Download the **Release** Version for easy install (Do not download via **<> Code link**)
 2. Copy the module folder into your FreeScout instance:
    - `Modules/AdamTicketAgingColors`
 3. Activate it in **Manage → Modules**.
-4. (Optional) clear caches:
-   - `php artisan cache:clear`
+4. If upgrading from an older version, rebuild FreeScout caches:
+   - `php artisan freescout:clear-cache`
+
+FreeScout creates `/public/modules/adamticketagingcolors` as a symlink to the module's `Public` directory. Do not manually copy module assets into the public directory.
 
 ## Compatibility
 
@@ -76,6 +82,20 @@ Settings are stored per mailbox using FreeScout options with the prefix:
 - The JavaScript fallback adds the row classes and marks the real subject cell so mobile CSS can render the bar even when core/theme classes change.
 - Escalation thresholds are inclusive: Level 1/2/3 apply once elapsed time is greater than or equal to the configured threshold.
 
+### v1.1.7 compatibility notes
+
+- Adds a per-mailbox switch for disabling the breathing/pulse animation while preserving the solid aging bar.
+- Loads versioned CSS and JavaScript from FreeScout's published module URL, avoiding Minify-cache edge cases reported in issue #14.
+- Does not read or inline asset files during layout rendering.
+- Keeps the documented uppercase module `Public` directory and FreeScout-managed public symlink contract.
+
+### Missing bars after an update
+
+1. Confirm the module is active in **Manage → Modules**.
+2. Confirm `/public/modules/adamticketagingcolors` is a symlink to the module's `Public` directory.
+3. Run `php artisan freescout:clear-cache`.
+4. Reload the ticket list and confirm the versioned `module.css` and `module.js` URLs return HTTP 200.
+
 ## License
 
 Licensed under **AGPL-3.0-only**. See `LICENSE` and `NOTICE`.
@@ -83,5 +103,4 @@ Licensed under **AGPL-3.0-only**. See `LICENSE` and `NOTICE`.
 ### Network use (AGPL §13)
 
 If this module is used on a FreeScout instance that users access over a network (HTTP/HTTPS), you must make the corresponding code for the exact version running on the server available to those users, as required by the AGPL.
-
 

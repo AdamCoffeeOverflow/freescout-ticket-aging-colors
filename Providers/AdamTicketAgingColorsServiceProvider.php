@@ -17,11 +17,13 @@ if (!defined('ADAMTICKETAGINGCOLORS_MODULE')) {
 class AdamTicketAgingColorsServiceProvider extends ServiceProvider
 {
     const ALIAS = ADAMTICKETAGINGCOLORS_MODULE;
+    const VERSION = '1.1.7';
 
     public function boot()
     {
         $this->registerConfig();
         $this->registerViews();
+        $this->registerTranslations();
         $this->registerRoutes();
         $this->registerAssets();
         $this->registerHooks();
@@ -42,25 +44,43 @@ class AdamTicketAgingColorsServiceProvider extends ServiceProvider
         $this->loadViewsFrom(__DIR__.'/../Resources/views', self::ALIAS);
     }
 
+    protected function registerTranslations(): void
+    {
+        $this->loadTranslationsFrom(__DIR__.'/../Resources/lang', self::ALIAS);
+    }
+
     protected function registerRoutes(): void
     {
         $this->loadRoutesFrom(__DIR__.'/../Http/routes.php');
     }
 
     /**
-     * Register assets via FreeScout filters so the core build/minify pipeline can manage caching.
+     * Register versioned public assets directly.
+     *
+     * Some supported installations do not rebuild the Minify bundle after a
+     * third-party module update. Direct self-hosted URLs keep the normal
+     * FreeScout Public-directory symlink contract while avoiding request-time
+     * file reads or duplicated inline CSS/JavaScript fallbacks.
      */
     protected function registerAssets(): void
     {
-        \Eventy::addFilter('stylesheets', function($styles) {
-            $styles[] = \Module::getPublicPath(self::ALIAS).'/css/module.css';
-            return $styles;
-        });
+        \Eventy::addAction('layout.head', function() {
+            echo '<link rel="stylesheet" href="'.e($this->publicAssetUrl('css/module.css')).'">';
+        }, 20);
 
-        \Eventy::addFilter('javascripts', function($javascripts) {
-            $javascripts[] = \Module::getPublicPath(self::ALIAS).'/js/module.js';
-            return $javascripts;
-        });
+        // layout.body_bottom is rendered before FreeScout's core script bundle.
+        // `defer` ensures jQuery is available when this module initializes.
+        \Eventy::addAction('layout.body_bottom', function() {
+            echo '<script defer src="'.e($this->publicAssetUrl('js/module.js')).'"></script>';
+        }, 20);
+    }
+
+    protected function publicAssetUrl(string $path): string
+    {
+        $base = rtrim(\Module::getPublicPath(self::ALIAS), '/');
+        $url = asset($base.'/'.ltrim($path, '/'));
+
+        return $url.'?v='.rawurlencode(self::VERSION);
     }
 
     protected function getAgingRowClass($conversation): string
@@ -94,6 +114,11 @@ class AdamTicketAgingColorsServiceProvider extends ServiceProvider
             if (empty($settings['enabled'])) {
                 return '';
             }
+
+            // Existing mailboxes default to the animated behavior. When the
+            // mailbox setting is disabled, CSS keeps the same bar and opacity
+            // but renders it as a static indicator.
+            $pulseClass = empty($settings['pulse_enabled']) ? ' adamtac-no-pulse' : '';
 
             $baseline = $settings['baseline'] ?? 'status_change';
             $from = null;
@@ -165,16 +190,16 @@ class AdamTicketAgingColorsServiceProvider extends ServiceProvider
             $l3u = (string)($settings['red_unit'] ?? 'business_days');
 
             if ($l3v > 0 && $elapsedForUnit($l3u) >= $l3v) {
-                return 'adamtac-row adamtac-red';
+                return 'adamtac-row adamtac-red'.$pulseClass;
             }
             if ($l2v > 0 && $elapsedForUnit($l2u) >= $l2v) {
-                return 'adamtac-row adamtac-orange';
+                return 'adamtac-row adamtac-orange'.$pulseClass;
             }
             if ($l1v > 0 && $elapsedForUnit($l1u) >= $l1v) {
-                return 'adamtac-row adamtac-yellow';
+                return 'adamtac-row adamtac-yellow'.$pulseClass;
             }
             if ($l0v > 0 && $elapsedForUnit($l0u) <= $l0v) {
-                return 'adamtac-row adamtac-green';
+                return 'adamtac-row adamtac-green'.$pulseClass;
             }
         } catch (\Throwable $e) {
             // The ticket table should never break because of the visual indicator.

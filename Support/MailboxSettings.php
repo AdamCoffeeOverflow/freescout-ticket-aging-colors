@@ -34,6 +34,7 @@ class MailboxSettings
         return [
 
             'enabled'        => (bool)\Config::get(self::ALIAS.'.options.enabled.default', true),
+            'pulse_enabled'  => (bool)\Config::get(self::ALIAS.'.options.pulse_enabled.default', true),
             'baseline'       => \Config::get(self::ALIAS.'.options.baseline.default', 'status_change'),
 
             // Level 0 (green/new) applies when elapsed time is <= threshold.
@@ -94,6 +95,14 @@ class MailboxSettings
         }
 
         $merged = array_merge(self::defaults(), self::getMailboxSettings($mailboxId));
+
+        // Option values may come back as booleans, integers, or strings across
+        // FreeScout versions. Normalize the new flag without treating the
+        // string "false" as truthy.
+        $merged['pulse_enabled'] = filter_var(
+            $merged['pulse_enabled'] ?? true,
+            FILTER_VALIDATE_BOOLEAN
+        );
 
         // Backward compatibility: older versions stored *_days instead of *_value/unit.
         if (!isset($merged['yellow_value']) && isset($merged['yellow_days'])) {
@@ -160,7 +169,7 @@ class MailboxSettings
 
         // Reduce to only the settings used by the current module version (keeps read-compat but avoids writing legacy junk).
         $merged = array_intersect_key($merged, array_flip([
-            'enabled','baseline',
+            'enabled','pulse_enabled','baseline',
             'green_value','green_unit','green_intensity','green_color',
             'yellow_value','yellow_unit','yellow_intensity','yellow_color',
             'orange_value','orange_unit','orange_intensity','orange_color',

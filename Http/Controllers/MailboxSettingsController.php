@@ -39,6 +39,8 @@ class MailboxSettingsController extends Controller
 
         // Validate user input (keep permissive upper bounds to avoid surprising admins).
         $request->validate([
+            'enabled' => 'nullable|in:1',
+            'pulse_enabled' => 'nullable|in:1',
             'baseline' => 'nullable|in:status_change,waiting_since,last_activity',
             'green_value' => 'nullable|integer|min:0|max:100000',
             'yellow_value' => 'nullable|integer|min:0|max:100000',
@@ -59,6 +61,7 @@ class MailboxSettingsController extends Controller
         $data = [
 
             'enabled' => (bool)($request->input('enabled') ?? false),
+            'pulse_enabled' => (bool)($request->input('pulse_enabled') ?? false),
             // Laravel version compatibility: Request::boolean() may not exist on older FreeScout stacks.
             'baseline' => $request->get('baseline', 'status_change'),
 
@@ -98,7 +101,7 @@ class MailboxSettingsController extends Controller
 
         MailboxSettings::saveMailboxSettings((int)$mailbox->id, $data);
 
-        \Session::flash('flash_success_floating', __('Settings saved'));
+        \Session::flash('flash_success_floating', __('adamticketagingcolors::messages.settings_saved'));
 
         return redirect()->route('adamticketagingcolors.mailboxes.settings', ['id' => $mailbox->id]);
     }

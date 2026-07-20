@@ -45,3 +45,4 @@ FreeScout core vulnerabilities should be reported to:
 https://github.com/freescout-help-desk/freescout/security
 
 Thank you for helping keep this project secure.
+
