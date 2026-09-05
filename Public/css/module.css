@@ -39,17 +39,17 @@
     display: none !important;
 }
 
-/* Ensure the indicator column can actually display a 5px bar.
- * The direct-child fallback supports older/custom table markup if conv-current is absent.
+/* FreeScout provides an explicit indicator/current column. Never fall back to
+ * the first table cell: responsive/app layouts may make customer content the
+ * first visible cell, and forcing that cell to 5px hides the customer name.
  */
-tr.adamtac-row td.conv-current,
-tr.adamtac-row > td:first-child {
+tr.adamtac-row td.conv-current {
     min-width: 5px !important;
     padding-left: 0 !important;
     padding-right: 0 !important;
     width: 5px !important;
 }
-/* Breathing animations (apply only to the LEFT bar via td:first-child box-shadow) */
+
 @keyframes adamtac-bar-yellow {
   0%, 100% { background-color: rgba(var(--adamtac-yellow-rgb), 0); }
   50%      { background-color: rgba(var(--adamtac-yellow-rgb), calc(var(--adamtac-yellow-intensity) / 100)); }
@@ -77,8 +77,7 @@ tr.adamtac-row > td:first-child {
  */
 
 /* Main row indicator column becomes a positioning context for the bar */
-tr.adamtac-row td.conv-current,
-tr.adamtac-row > td:first-child {
+tr.adamtac-row td.conv-current {
     background: transparent !important;
     position: relative;
 }
@@ -88,7 +87,6 @@ tr.adamtac-row + tr.cf-conv-row td { position: relative; }
 
 /* Shared bar geometry */
 tr.adamtac-row td.conv-current::before,
-tr.adamtac-row > td:first-child::before,
 tr.adamtac-row + tr.cf-conv-row td::before {
   content: '';
   position: absolute;
@@ -101,7 +99,6 @@ tr.adamtac-row + tr.cf-conv-row td::before {
 
 /* Color + timing (MUST match between the main row and its extra row) */
 tr.adamtac-row.adamtac-yellow td.conv-current::before,
-tr.adamtac-row.adamtac-yellow > td:first-child::before,
 tr.adamtac-row.adamtac-yellow + tr.cf-conv-row td::before {
   --adamtac-bar-intensity: var(--adamtac-yellow-intensity);
   --adamtac-bar-rgb: var(--adamtac-yellow-rgb);
@@ -109,7 +106,6 @@ tr.adamtac-row.adamtac-yellow + tr.cf-conv-row td::before {
 }
 
 tr.adamtac-row.adamtac-green td.conv-current::before,
-tr.adamtac-row.adamtac-green > td:first-child::before,
 tr.adamtac-row.adamtac-green + tr.cf-conv-row td::before {
   --adamtac-bar-intensity: var(--adamtac-green-intensity);
   --adamtac-bar-rgb: var(--adamtac-green-rgb);
@@ -117,7 +113,6 @@ tr.adamtac-row.adamtac-green + tr.cf-conv-row td::before {
 }
 
 tr.adamtac-row.adamtac-orange td.conv-current::before,
-tr.adamtac-row.adamtac-orange > td:first-child::before,
 tr.adamtac-row.adamtac-orange + tr.cf-conv-row td::before {
   --adamtac-bar-intensity: var(--adamtac-orange-intensity);
   --adamtac-bar-rgb: var(--adamtac-orange-rgb);
@@ -125,7 +120,6 @@ tr.adamtac-row.adamtac-orange + tr.cf-conv-row td::before {
 }
 
 tr.adamtac-row.adamtac-red td.conv-current::before,
-tr.adamtac-row.adamtac-red > td:first-child::before,
 tr.adamtac-row.adamtac-red + tr.cf-conv-row td::before {
   --adamtac-bar-intensity: var(--adamtac-red-intensity);
   --adamtac-bar-rgb: var(--adamtac-red-rgb);
@@ -136,7 +130,6 @@ tr.adamtac-row.adamtac-red + tr.cf-conv-row td::before {
  * reset animation-delay back to zero.
  */
 tr.adamtac-row td.conv-current::before,
-tr.adamtac-row > td:first-child::before,
 tr.adamtac-row + tr.cf-conv-row td::before {
   animation-delay: calc(-1s * var(--adamtac-sync));
 }
@@ -150,38 +143,32 @@ tr.adamtac-row th:not(.conv-current) {
 /* Respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
   tr.adamtac-row.adamtac-green td.conv-current::before,
-  tr.adamtac-row.adamtac-green > td:first-child::before,
   tr.adamtac-row.adamtac-green + tr.cf-conv-row td::before,
   tr.adamtac-row.adamtac-yellow td.conv-current::before,
-  tr.adamtac-row.adamtac-yellow > td:first-child::before,
   tr.adamtac-row.adamtac-yellow + tr.cf-conv-row td::before,
   tr.adamtac-row.adamtac-orange td.conv-current::before,
-  tr.adamtac-row.adamtac-orange > td:first-child::before,
   tr.adamtac-row.adamtac-orange + tr.cf-conv-row td::before,
   tr.adamtac-row.adamtac-red td.conv-current::before,
-  tr.adamtac-row.adamtac-red > td:first-child::before,
   tr.adamtac-row.adamtac-red + tr.cf-conv-row td::before {
     animation: none !important;
   }
 
   tr.adamtac-row.adamtac-green td.conv-current::before,
-  tr.adamtac-row.adamtac-green > td:first-child::before,
   tr.adamtac-row.adamtac-green + tr.cf-conv-row td::before {
     background-color: rgba(var(--adamtac-green-rgb), calc(var(--adamtac-green-intensity) / 100)) !important;
   }
 
   tr.adamtac-row.adamtac-yellow td.conv-current::before,
-  tr.adamtac-row.adamtac-yellow > td:first-child::before,
   tr.adamtac-row.adamtac-yellow + tr.cf-conv-row td::before {
     background-color: rgba(var(--adamtac-yellow-rgb), calc(var(--adamtac-yellow-intensity) / 100)) !important;
   }
+
   tr.adamtac-row.adamtac-orange td.conv-current::before,
-  tr.adamtac-row.adamtac-orange > td:first-child::before,
   tr.adamtac-row.adamtac-orange + tr.cf-conv-row td::before {
     background-color: rgba(var(--adamtac-orange-rgb), calc(var(--adamtac-orange-intensity) / 100)) !important;
   }
+
   tr.adamtac-row.adamtac-red td.conv-current::before,
-  tr.adamtac-row.adamtac-red > td:first-child::before,
   tr.adamtac-row.adamtac-red + tr.cf-conv-row td::before {
     background-color: rgba(var(--adamtac-red-rgb), calc(var(--adamtac-red-intensity) / 100)) !important;
   }
@@ -192,8 +179,7 @@ tr.adamtac-row th:not(.conv-current) {
  * remains available on phones without relying on desktop-only table columns.
  */
 @media (max-width: 767px) {
-    tr.adamtac-row td.conv-current::before,
-    tr.adamtac-row > td:first-child::before {
+    tr.adamtac-row td.conv-current::before {
         display: none;
     }
 
@@ -301,7 +287,6 @@ tr.adamtac-row th:not(.conv-current) {
  * compact override to cover every color without duplicating the palette.
  */
 tr.adamtac-row.adamtac-no-pulse td.conv-current::before,
-tr.adamtac-row.adamtac-no-pulse > td:first-child::before,
 tr.adamtac-row.adamtac-no-pulse + tr.cf-conv-row td::before {
   animation: none !important;
   background-color: rgba(var(--adamtac-bar-rgb), calc(var(--adamtac-bar-intensity) / 100)) !important;
