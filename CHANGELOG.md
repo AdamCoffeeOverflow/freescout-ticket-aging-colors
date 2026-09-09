@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.9 - 2026-09-09
+
+### Added
+
+- Added Portuguese (Portugal) (`pt-PT`) translations for the module settings UI and confirmation message, following the contribution in issue #23.
+
 ## 1.1.8 - 2026-09-09
 
 ### Fixed
