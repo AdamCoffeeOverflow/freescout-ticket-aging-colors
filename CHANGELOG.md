@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.8 - 2026-09-09
+
+### Fixed
+
+- Fixed the reported FreeScout mobile/app conversation overview issue where enabling Ticket Aging Colors could hide the customer name.
+- Removed positional `td:first-child` aging-bar fallbacks and now target FreeScout's explicit `conv-current` indicator cell. The existing `conversations_table.before_subject` marker remains the compatibility path for layouts that need the subject-cell mobile bar.
+- Source-verified the conversation-table hooks and markup against FreeScout 1.8.0, 1.8.238, and 1.8.239.
+
 ## 1.1.7 - 2026-07-20
 
 ### Added
