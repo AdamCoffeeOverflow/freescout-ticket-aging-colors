@@ -17,7 +17,7 @@ if (!defined('ADAMTICKETAGINGCOLORS_MODULE')) {
 class AdamTicketAgingColorsServiceProvider extends ServiceProvider
 {
     const ALIAS = ADAMTICKETAGINGCOLORS_MODULE;
-    const VERSION = '1.1.8';
+    const VERSION = '1.1.9';
 
     public function boot()
     {
