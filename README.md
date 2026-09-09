@@ -21,7 +21,7 @@ FreeScout module that adds a **left-side aging accent bar** on each conversation
 - Does **not** apply to **Closed** tickets.
 - Adds a CSS-driven **accent bar** visible in conversation list, including the mobile conversation list view.
 - Lets each mailbox keep the default breathing animation or display a static accent bar.
-- Includes English and Russian translations for the module settings UI.
+- Includes English, Russian, and Portuguese (Portugal) translations for the module settings UI.
 - Supports **four escalation levels** (New (level 0) / Level 1 / Level 2 / Level 3), each with:
   - Threshold (value + unit)
   - Color (Green, Yellow, Orange, Deep Red)
@@ -103,4 +103,3 @@ Licensed under **AGPL-3.0-only**. See `LICENSE` and `NOTICE`.
 ### Network use (AGPL §13)
 
 If this module is used on a FreeScout instance that users access over a network (HTTP/HTTPS), you must make the corresponding code for the exact version running on the server available to those users, as required by the AGPL.
-
