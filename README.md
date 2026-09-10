@@ -72,8 +72,9 @@ FreeScout creates `/public/modules/adamticketagingcolors` as a symlink to the mo
 
 
 ### UI Compatibility
-- Desktop: this module styles the **indicator column** (`td.conv-current`) and does not modify `.conv-fader` to avoid conflicts with themes and Custom Fields UI.
-- Mobile: FreeScout may hide/collapse the indicator column, so the same left aging bar is rendered on the actual cell containing the module hook marker. This avoids relying only on core/theme class names such as `td.conv-subject`.
+- Desktop (`>1000px`): this module keeps the compact aging indicator in FreeScout's **indicator column** (`td.conv-current`) and does not modify `.conv-fader`.
+- Responsive/app (`<=1000px`): the module leaves FreeScout's customer-cell sizing and positioning untouched, removes its desktop width constraint from `td.conv-current`, and renders the aging bar on the subject cell containing the `conversations_table.before_subject` marker.
+- The same responsive behavior is used for animated, static, and reduced-motion modes, avoiding device-specific breakpoint overrides.
 
 
 ### v1.1.6.1 hotfix compatibility notes
@@ -88,6 +89,12 @@ FreeScout creates `/public/modules/adamticketagingcolors` as a symlink to the mo
 - Loads versioned CSS and JavaScript from FreeScout's published module URL, avoiding Minify-cache edge cases reported in issue #14.
 - Does not read or inline asset files during layout rendering.
 - Keeps the documented uppercase module `Public` directory and FreeScout-managed public symlink contract.
+
+### v1.1.10 compatibility notes
+
+- Aligns Ticket Aging Colors with FreeScout's responsive conversation-table breakpoint at `1000px`.
+- Limits the module's 5px `conv-current` sizing to desktop layout so the official app and tablet/phone views retain FreeScout's responsive cell geometry.
+- Keeps the customer cell untouched while moving the aging indicator to the subject-cell fallback for the full responsive range.
 
 ### Missing bars after an update
 
