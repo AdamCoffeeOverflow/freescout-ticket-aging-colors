@@ -3,12 +3,10 @@
  * Ticket Aging Colors for FreeScout
  *
  * Visual indicator: a left-side color bar on each conversation row.
- * The bar "breathes" (alpha pulse) based on per-mailbox intensity settings.
- *
- * This module intentionally does NOT tint the entire row background.
+ * Core conversation cells are deliberately left to FreeScout, especially in
+ * its responsive layout. Mobile uses only the module-owned hook marker.
  */
 
-/* Defaults (overridden per-mailbox by Resources/views/layouts/css_vars.blade.php) */
 :root {
     --adamtac-green: #4CAF50;
     --adamtac-green-rgb: 76, 175, 80;
@@ -18,183 +16,57 @@
     --adamtac-orange-rgb: 255, 152, 0;
     --adamtac-red: #B71C1C;
     --adamtac-red-rgb: 183, 28, 28;
-
-    /* 0–100 (used as max opacity) */
     --adamtac-green-intensity: 15;
     --adamtac-yellow-intensity: 20;
     --adamtac-orange-intensity: 25;
     --adamtac-red-intensity: 30;
-
-    /* Animation phase anchor (set once via module JS) */
     --adamtac-sync: 0;
 }
 
-/* Settings page only */
 .adamtac-settings input.form-control-range {
     width: 100%;
 }
 
-/* Hidden compatibility marker injected via conversations_table.before_subject. */
+/* The marker is emitted inside FreeScout's existing subject link. It stays
+ * out of layout flow unless the responsive indicator is needed.
+ */
 .adamtac-row-marker {
     display: none !important;
 }
 
-/* FreeScout switches the conversation table to block layout at 1000px.
- * Keep the compact indicator cell strictly in desktop table layout so the
- * module never overrides responsive/app cell geometry.
+@keyframes adamtac-bar-yellow {
+    0%, 100% { background-color: rgba(var(--adamtac-yellow-rgb), 0); }
+    50% { background-color: rgba(var(--adamtac-yellow-rgb), calc(var(--adamtac-yellow-intensity) / 100)); }
+}
+
+@keyframes adamtac-bar-green {
+    0%, 100% { background-color: rgba(var(--adamtac-green-rgb), 0); }
+    50% { background-color: rgba(var(--adamtac-green-rgb), calc(var(--adamtac-green-intensity) / 100)); }
+}
+
+@keyframes adamtac-bar-orange {
+    0%, 100% { background-color: rgba(var(--adamtac-orange-rgb), 0); }
+    50% { background-color: rgba(var(--adamtac-orange-rgb), calc(var(--adamtac-orange-intensity) / 100)); }
+}
+
+@keyframes adamtac-bar-red {
+    0%, 100% { background-color: rgba(var(--adamtac-red-rgb), 0); }
+    50% { background-color: rgba(var(--adamtac-red-rgb), calc(var(--adamtac-red-intensity) / 100)); }
+}
+
+/* Desktop only: use FreeScout's dedicated current/indicator cell. No customer,
+ * subject, date, owner, attachment, or thread-count cell is modified.
  */
 @media (min-width: 1001px) {
     tr.adamtac-row td.conv-current {
         min-width: 5px !important;
         padding-left: 0 !important;
         padding-right: 0 !important;
+        position: relative;
         width: 5px !important;
     }
-}
 
-@keyframes adamtac-bar-yellow {
-  0%, 100% { background-color: rgba(var(--adamtac-yellow-rgb), 0); }
-  50%      { background-color: rgba(var(--adamtac-yellow-rgb), calc(var(--adamtac-yellow-intensity) / 100)); }
-}
-
-@keyframes adamtac-bar-green {
-  0%, 100% { background-color: rgba(var(--adamtac-green-rgb), 0); }
-  50%      { background-color: rgba(var(--adamtac-green-rgb), calc(var(--adamtac-green-intensity) / 100)); }
-}
-
-@keyframes adamtac-bar-red {
-  0%, 100% { background-color: rgba(var(--adamtac-red-rgb), 0); }
-  50%      { background-color: rgba(var(--adamtac-red-rgb), calc(var(--adamtac-red-intensity) / 100)); }
-}
-
-@keyframes adamtac-bar-orange {
-  0%, 100% { background-color: rgba(var(--adamtac-orange-rgb), 0); }
-  50%      { background-color: rgba(var(--adamtac-orange-rgb), calc(var(--adamtac-orange-intensity) / 100)); }
-}
-
-/* LEFT accent bar (unified implementation): always render as a ::before bar.
- * This guarantees the same intensity + animation behavior on both:
- *  - the main row indicator column (td.conv-current)
- *  - the CustomFields extra row inserted under the ticket row
- */
-
-/* Main row indicator column becomes a positioning context for the bar */
-tr.adamtac-row td.conv-current {
-    background: transparent !important;
-    position: relative;
-}
-
-/* CustomFields extra row: every TD gets a left bar (matches the extra-row height) */
-tr.adamtac-row + tr.cf-conv-row td { position: relative; }
-
-/* Shared bar geometry */
-tr.adamtac-row td.conv-current::before,
-tr.adamtac-row + tr.cf-conv-row td::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 5px;
-  pointer-events: none;
-}
-
-/* Color + timing (MUST match between the main row and its extra row) */
-tr.adamtac-row.adamtac-yellow td.conv-current::before,
-tr.adamtac-row.adamtac-yellow + tr.cf-conv-row td::before {
-  --adamtac-bar-intensity: var(--adamtac-yellow-intensity);
-  --adamtac-bar-rgb: var(--adamtac-yellow-rgb);
-  animation: adamtac-bar-yellow 3s ease-in-out infinite;
-}
-
-tr.adamtac-row.adamtac-green td.conv-current::before,
-tr.adamtac-row.adamtac-green + tr.cf-conv-row td::before {
-  --adamtac-bar-intensity: var(--adamtac-green-intensity);
-  --adamtac-bar-rgb: var(--adamtac-green-rgb);
-  animation: adamtac-bar-green 3.2s ease-in-out infinite;
-}
-
-tr.adamtac-row.adamtac-orange td.conv-current::before,
-tr.adamtac-row.adamtac-orange + tr.cf-conv-row td::before {
-  --adamtac-bar-intensity: var(--adamtac-orange-intensity);
-  --adamtac-bar-rgb: var(--adamtac-orange-rgb);
-  animation: adamtac-bar-orange 2.5s ease-in-out infinite;
-}
-
-tr.adamtac-row.adamtac-red td.conv-current::before,
-tr.adamtac-row.adamtac-red + tr.cf-conv-row td::before {
-  --adamtac-bar-intensity: var(--adamtac-red-intensity);
-  --adamtac-bar-rgb: var(--adamtac-red-rgb);
-  animation: adamtac-bar-red 2s ease-in-out infinite;
-}
-
-/* Declare the phase after the animation shorthand so the shorthand cannot
- * reset animation-delay back to zero.
- */
-tr.adamtac-row td.conv-current::before,
-tr.adamtac-row + tr.cf-conv-row td::before {
-  animation-delay: calc(-1s * var(--adamtac-sync));
-}
-
-/* Ensure we never tint the whole row (except the conv-current bar) */
-tr.adamtac-row td:not(.conv-current),
-tr.adamtac-row th:not(.conv-current) {
-  background-color: inherit !important;
-}
-
-/* Respect reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  tr.adamtac-row.adamtac-green td.conv-current::before,
-  tr.adamtac-row.adamtac-green + tr.cf-conv-row td::before,
-  tr.adamtac-row.adamtac-yellow td.conv-current::before,
-  tr.adamtac-row.adamtac-yellow + tr.cf-conv-row td::before,
-  tr.adamtac-row.adamtac-orange td.conv-current::before,
-  tr.adamtac-row.adamtac-orange + tr.cf-conv-row td::before,
-  tr.adamtac-row.adamtac-red td.conv-current::before,
-  tr.adamtac-row.adamtac-red + tr.cf-conv-row td::before {
-    animation: none !important;
-  }
-
-  tr.adamtac-row.adamtac-green td.conv-current::before,
-  tr.adamtac-row.adamtac-green + tr.cf-conv-row td::before {
-    background-color: rgba(var(--adamtac-green-rgb), calc(var(--adamtac-green-intensity) / 100)) !important;
-  }
-
-  tr.adamtac-row.adamtac-yellow td.conv-current::before,
-  tr.adamtac-row.adamtac-yellow + tr.cf-conv-row td::before {
-    background-color: rgba(var(--adamtac-yellow-rgb), calc(var(--adamtac-yellow-intensity) / 100)) !important;
-  }
-
-  tr.adamtac-row.adamtac-orange td.conv-current::before,
-  tr.adamtac-row.adamtac-orange + tr.cf-conv-row td::before {
-    background-color: rgba(var(--adamtac-orange-rgb), calc(var(--adamtac-orange-intensity) / 100)) !important;
-  }
-
-  tr.adamtac-row.adamtac-red td.conv-current::before,
-  tr.adamtac-row.adamtac-red + tr.cf-conv-row td::before {
-    background-color: rgba(var(--adamtac-red-rgb), calc(var(--adamtac-red-intensity) / 100)) !important;
-  }
-}
-
-/* FreeScout uses its responsive conversation-table layout at 1000px and below.
- * Re-render the aging bar on the visible subject cell throughout that same
- * range and leave the customer cell geometry entirely to FreeScout.
- */
-@media (max-width: 1000px) {
     tr.adamtac-row td.conv-current::before {
-        display: none;
-    }
-
-    tr.adamtac-row td.conv-subject,
-    tr.adamtac-row td.adamtac-subject-cell,
-    tr.adamtac-row th.adamtac-subject-cell {
-        padding-left: 12px !important;
-        position: relative;
-    }
-
-    tr.adamtac-row td.conv-subject::before,
-    tr.adamtac-row td.adamtac-subject-cell::before,
-    tr.adamtac-row th.adamtac-subject-cell::before {
         bottom: 0;
         content: '';
         left: 0;
@@ -204,101 +76,195 @@ tr.adamtac-row th:not(.conv-current) {
         width: 5px;
     }
 
-    tr.adamtac-row.adamtac-green td.conv-subject::before,
-    tr.adamtac-row.adamtac-green td.adamtac-subject-cell::before,
-    tr.adamtac-row.adamtac-green th.adamtac-subject-cell::before {
+    tr.adamtac-row.adamtac-green td.conv-current::before {
         --adamtac-bar-intensity: var(--adamtac-green-intensity);
         --adamtac-bar-rgb: var(--adamtac-green-rgb);
         animation: adamtac-bar-green 3.2s ease-in-out infinite;
     }
 
-    tr.adamtac-row.adamtac-yellow td.conv-subject::before,
-    tr.adamtac-row.adamtac-yellow td.adamtac-subject-cell::before,
-    tr.adamtac-row.adamtac-yellow th.adamtac-subject-cell::before {
+    tr.adamtac-row.adamtac-yellow td.conv-current::before {
         --adamtac-bar-intensity: var(--adamtac-yellow-intensity);
         --adamtac-bar-rgb: var(--adamtac-yellow-rgb);
         animation: adamtac-bar-yellow 3s ease-in-out infinite;
     }
 
-    tr.adamtac-row.adamtac-orange td.conv-subject::before,
-    tr.adamtac-row.adamtac-orange td.adamtac-subject-cell::before,
-    tr.adamtac-row.adamtac-orange th.adamtac-subject-cell::before {
+    tr.adamtac-row.adamtac-orange td.conv-current::before {
         --adamtac-bar-intensity: var(--adamtac-orange-intensity);
         --adamtac-bar-rgb: var(--adamtac-orange-rgb);
         animation: adamtac-bar-orange 2.5s ease-in-out infinite;
     }
 
-    tr.adamtac-row.adamtac-red td.conv-subject::before,
-    tr.adamtac-row.adamtac-red td.adamtac-subject-cell::before,
-    tr.adamtac-row.adamtac-red th.adamtac-subject-cell::before {
+    tr.adamtac-row.adamtac-red td.conv-current::before {
         --adamtac-bar-intensity: var(--adamtac-red-intensity);
         --adamtac-bar-rgb: var(--adamtac-red-rgb);
         animation: adamtac-bar-red 2s ease-in-out infinite;
     }
 
-    tr.adamtac-row td.conv-subject::before,
-    tr.adamtac-row td.adamtac-subject-cell::before,
-    tr.adamtac-row th.adamtac-subject-cell::before {
+    tr.adamtac-row td.conv-current::before {
+        animation-delay: calc(-1s * var(--adamtac-sync));
+    }
+
+    /* Custom Fields adds a separate row. Keep its legacy bar desktop-only so
+     * it cannot participate in FreeScout's responsive absolute-cell layout.
+     */
+    tr.adamtac-row + tr.cf-conv-row td {
+        position: relative;
+    }
+
+    tr.adamtac-row + tr.cf-conv-row td::before {
+        bottom: 0;
+        content: '';
+        left: 0;
+        pointer-events: none;
+        position: absolute;
+        top: 0;
+        width: 5px;
+    }
+
+    tr.adamtac-row.adamtac-green + tr.cf-conv-row td::before {
+        --adamtac-bar-intensity: var(--adamtac-green-intensity);
+        --adamtac-bar-rgb: var(--adamtac-green-rgb);
+        animation: adamtac-bar-green 3.2s ease-in-out infinite;
+    }
+
+    tr.adamtac-row.adamtac-yellow + tr.cf-conv-row td::before {
+        --adamtac-bar-intensity: var(--adamtac-yellow-intensity);
+        --adamtac-bar-rgb: var(--adamtac-yellow-rgb);
+        animation: adamtac-bar-yellow 3s ease-in-out infinite;
+    }
+
+    tr.adamtac-row.adamtac-orange + tr.cf-conv-row td::before {
+        --adamtac-bar-intensity: var(--adamtac-orange-intensity);
+        --adamtac-bar-rgb: var(--adamtac-orange-rgb);
+        animation: adamtac-bar-orange 2.5s ease-in-out infinite;
+    }
+
+    tr.adamtac-row.adamtac-red + tr.cf-conv-row td::before {
+        --adamtac-bar-intensity: var(--adamtac-red-intensity);
+        --adamtac-bar-rgb: var(--adamtac-red-rgb);
+        animation: adamtac-bar-red 2s ease-in-out infinite;
+    }
+
+    tr.adamtac-row + tr.cf-conv-row td::before {
         animation-delay: calc(-1s * var(--adamtac-sync));
     }
 }
 
-@media (max-width: 1000px) and (prefers-reduced-motion: reduce) {
-    tr.adamtac-row.adamtac-green td.conv-subject::before,
-    tr.adamtac-row.adamtac-green td.adamtac-subject-cell::before,
-    tr.adamtac-row.adamtac-green th.adamtac-subject-cell::before,
-    tr.adamtac-row.adamtac-yellow td.conv-subject::before,
-    tr.adamtac-row.adamtac-yellow td.adamtac-subject-cell::before,
-    tr.adamtac-row.adamtac-yellow th.adamtac-subject-cell::before,
-    tr.adamtac-row.adamtac-orange td.conv-subject::before,
-    tr.adamtac-row.adamtac-orange td.adamtac-subject-cell::before,
-    tr.adamtac-row.adamtac-orange th.adamtac-subject-cell::before,
-    tr.adamtac-row.adamtac-red td.conv-subject::before,
-    tr.adamtac-row.adamtac-red td.adamtac-subject-cell::before,
-    tr.adamtac-row.adamtac-red th.adamtac-subject-cell::before {
+/* Responsive FreeScout layout: never alter a core table cell or link. The
+ * already-injected module marker becomes the bar. FreeScout itself provides
+ * the positioned subject link that acts as the containing block.
+ */
+@media (max-width: 1000px) {
+    tr.adamtac-row .adamtac-row-marker {
+        bottom: 0;
+        display: block !important;
+        left: 0;
+        pointer-events: none;
+        position: absolute;
+        top: 0;
+        width: 5px;
+    }
+
+    tr.adamtac-row.adamtac-green .adamtac-row-marker {
+        --adamtac-bar-intensity: var(--adamtac-green-intensity);
+        --adamtac-bar-rgb: var(--adamtac-green-rgb);
+        animation: adamtac-bar-green 3.2s ease-in-out infinite;
+    }
+
+    tr.adamtac-row.adamtac-yellow .adamtac-row-marker {
+        --adamtac-bar-intensity: var(--adamtac-yellow-intensity);
+        --adamtac-bar-rgb: var(--adamtac-yellow-rgb);
+        animation: adamtac-bar-yellow 3s ease-in-out infinite;
+    }
+
+    tr.adamtac-row.adamtac-orange .adamtac-row-marker {
+        --adamtac-bar-intensity: var(--adamtac-orange-intensity);
+        --adamtac-bar-rgb: var(--adamtac-orange-rgb);
+        animation: adamtac-bar-orange 2.5s ease-in-out infinite;
+    }
+
+    tr.adamtac-row.adamtac-red .adamtac-row-marker {
+        --adamtac-bar-intensity: var(--adamtac-red-intensity);
+        --adamtac-bar-rgb: var(--adamtac-red-rgb);
+        animation: adamtac-bar-red 2s ease-in-out infinite;
+    }
+
+    tr.adamtac-row .adamtac-row-marker {
+        animation-delay: calc(-1s * var(--adamtac-sync));
+    }
+}
+
+/* Per-mailbox static mode. */
+@media (min-width: 1001px) {
+    tr.adamtac-row.adamtac-no-pulse td.conv-current::before,
+    tr.adamtac-row.adamtac-no-pulse + tr.cf-conv-row td::before {
+        animation: none !important;
+        background-color: rgba(var(--adamtac-bar-rgb), calc(var(--adamtac-bar-intensity) / 100)) !important;
+    }
+}
+
+@media (max-width: 1000px) {
+    tr.adamtac-row.adamtac-no-pulse .adamtac-row-marker {
+        animation: none !important;
+        background-color: rgba(var(--adamtac-bar-rgb), calc(var(--adamtac-bar-intensity) / 100)) !important;
+    }
+}
+
+/* Reduced motion keeps the indicator visible but static. */
+@media (prefers-reduced-motion: reduce) and (min-width: 1001px) {
+    tr.adamtac-row.adamtac-green td.conv-current::before,
+    tr.adamtac-row.adamtac-yellow td.conv-current::before,
+    tr.adamtac-row.adamtac-orange td.conv-current::before,
+    tr.adamtac-row.adamtac-red td.conv-current::before,
+    tr.adamtac-row.adamtac-green + tr.cf-conv-row td::before,
+    tr.adamtac-row.adamtac-yellow + tr.cf-conv-row td::before,
+    tr.adamtac-row.adamtac-orange + tr.cf-conv-row td::before,
+    tr.adamtac-row.adamtac-red + tr.cf-conv-row td::before {
         animation: none !important;
     }
 
-    tr.adamtac-row.adamtac-green td.conv-subject::before,
-    tr.adamtac-row.adamtac-green td.adamtac-subject-cell::before,
-    tr.adamtac-row.adamtac-green th.adamtac-subject-cell::before {
+    tr.adamtac-row.adamtac-green td.conv-current::before,
+    tr.adamtac-row.adamtac-green + tr.cf-conv-row td::before {
         background-color: rgba(var(--adamtac-green-rgb), calc(var(--adamtac-green-intensity) / 100)) !important;
     }
 
-    tr.adamtac-row.adamtac-yellow td.conv-subject::before,
-    tr.adamtac-row.adamtac-yellow td.adamtac-subject-cell::before,
-    tr.adamtac-row.adamtac-yellow th.adamtac-subject-cell::before {
+    tr.adamtac-row.adamtac-yellow td.conv-current::before,
+    tr.adamtac-row.adamtac-yellow + tr.cf-conv-row td::before {
         background-color: rgba(var(--adamtac-yellow-rgb), calc(var(--adamtac-yellow-intensity) / 100)) !important;
     }
 
-    tr.adamtac-row.adamtac-orange td.conv-subject::before,
-    tr.adamtac-row.adamtac-orange td.adamtac-subject-cell::before,
-    tr.adamtac-row.adamtac-orange th.adamtac-subject-cell::before {
+    tr.adamtac-row.adamtac-orange td.conv-current::before,
+    tr.adamtac-row.adamtac-orange + tr.cf-conv-row td::before {
         background-color: rgba(var(--adamtac-orange-rgb), calc(var(--adamtac-orange-intensity) / 100)) !important;
     }
 
-    tr.adamtac-row.adamtac-red td.conv-subject::before,
-    tr.adamtac-row.adamtac-red td.adamtac-subject-cell::before,
-    tr.adamtac-row.adamtac-red th.adamtac-subject-cell::before {
+    tr.adamtac-row.adamtac-red td.conv-current::before,
+    tr.adamtac-row.adamtac-red + tr.cf-conv-row td::before {
         background-color: rgba(var(--adamtac-red-rgb), calc(var(--adamtac-red-intensity) / 100)) !important;
     }
 }
 
-/* Optional per-mailbox static mode. The active color rules above expose the
- * row-specific RGB and intensity values on each pseudo-element, allowing one
- * compact override to cover every color without duplicating the palette.
- */
-tr.adamtac-row.adamtac-no-pulse td.conv-current::before,
-tr.adamtac-row.adamtac-no-pulse + tr.cf-conv-row td::before {
-  animation: none !important;
-  background-color: rgba(var(--adamtac-bar-rgb), calc(var(--adamtac-bar-intensity) / 100)) !important;
-}
-
-@media (max-width: 1000px) {
-    tr.adamtac-row.adamtac-no-pulse td.conv-subject::before,
-    tr.adamtac-row.adamtac-no-pulse td.adamtac-subject-cell::before,
-    tr.adamtac-row.adamtac-no-pulse th.adamtac-subject-cell::before {
+@media (prefers-reduced-motion: reduce) and (max-width: 1000px) {
+    tr.adamtac-row.adamtac-green .adamtac-row-marker,
+    tr.adamtac-row.adamtac-yellow .adamtac-row-marker,
+    tr.adamtac-row.adamtac-orange .adamtac-row-marker,
+    tr.adamtac-row.adamtac-red .adamtac-row-marker {
         animation: none !important;
-        background-color: rgba(var(--adamtac-bar-rgb), calc(var(--adamtac-bar-intensity) / 100)) !important;
+    }
+
+    tr.adamtac-row.adamtac-green .adamtac-row-marker {
+        background-color: rgba(var(--adamtac-green-rgb), calc(var(--adamtac-green-intensity) / 100)) !important;
+    }
+
+    tr.adamtac-row.adamtac-yellow .adamtac-row-marker {
+        background-color: rgba(var(--adamtac-yellow-rgb), calc(var(--adamtac-yellow-intensity) / 100)) !important;
+    }
+
+    tr.adamtac-row.adamtac-orange .adamtac-row-marker {
+        background-color: rgba(var(--adamtac-orange-rgb), calc(var(--adamtac-orange-intensity) / 100)) !important;
+    }
+
+    tr.adamtac-row.adamtac-red .adamtac-row-marker {
+        background-color: rgba(var(--adamtac-red-rgb), calc(var(--adamtac-red-intensity) / 100)) !important;
     }
 }
