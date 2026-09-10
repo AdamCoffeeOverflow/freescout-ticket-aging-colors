@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.1.10 - 2026-09-10
+
+### Fixed
+
+- Fixed issue #21 in FreeScout's responsive conversation overview, including the official iOS app portrait layout and tablet-width views.
+- Scoped the 5px `conv-current` sizing to desktop table layout only so Ticket Aging Colors no longer overrides FreeScout's responsive 100%-width cell geometry.
+- Aligned the subject-cell aging-bar fallback with FreeScout's `1000px` conversation-table breakpoint instead of switching only below `767px`.
+- Kept the customer cell untouched while preserving animated, static, and reduced-motion aging indicators throughout the responsive range.
+
 ## 1.1.9 - 2026-09-09
 
 ### Added
