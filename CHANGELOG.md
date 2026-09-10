@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.1.12 - 2026-09-10
+
+### Fixed
+
+- Removes every responsive override of FreeScout conversation cells and links.
+- Removes the broad inherited-background override from non-indicator cells.
+- Renders the responsive aging bar only on the module-owned `adamtac-row-marker` already injected inside the subject link.
+- Keeps the desktop bar limited to FreeScout's dedicated `conv-current` indicator cell.
+
+## 1.1.11 - TEST BUILD
+
+### Fixed
+
+- Removed the responsive table-cell positioning fallback that could cover FreeScout's absolutely positioned customer name in mobile/app layouts.
+- Anchored the responsive aging indicator inside the existing subject link instead of modifying `td.conv-subject` geometry.
+- Removed the JavaScript `adamtac-subject-cell` fallback; the marker now only applies aging row classes on older compatible FreeScout layouts.
+
 ## 1.1.10 - 2026-09-10
 
 ### Fixed
