@@ -1,0 +1,197 @@
+name: Build issue 21 test package
+
+on:
+  push:
+    branches:
+      - test/issue-21-1.1.11
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Apply 1.1.11 test patch
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+
+          css_path = Path('Public/css/module.css')
+          css = css_path.read_text()
+          marker = '/* FreeScout uses its responsive conversation-table layout at 1000px and below.'
+          if marker not in css:
+              raise SystemExit('responsive CSS marker not found')
+          head = css.split(marker, 1)[0]
+          tail = r'''/* FreeScout uses its responsive conversation-table layout at 1000px and below.
+           * Keep FreeScout's table-cell geometry untouched. The mobile aging indicator is
+           * anchored inside the existing subject link, not on the td itself.
+           */
+          @media (max-width: 1000px) {
+              tr.adamtac-row td.conv-current::before {
+                  display: none;
+              }
+
+              tr.adamtac-row td.conv-subject > a {
+                  padding-left: 12px !important;
+                  position: relative;
+              }
+
+              tr.adamtac-row td.conv-subject > a::before {
+                  bottom: 0;
+                  content: '';
+                  left: 0;
+                  pointer-events: none;
+                  position: absolute;
+                  top: 0;
+                  width: 5px;
+              }
+
+              tr.adamtac-row.adamtac-green td.conv-subject > a::before {
+                  --adamtac-bar-intensity: var(--adamtac-green-intensity);
+                  --adamtac-bar-rgb: var(--adamtac-green-rgb);
+                  animation: adamtac-bar-green 3.2s ease-in-out infinite;
+              }
+
+              tr.adamtac-row.adamtac-yellow td.conv-subject > a::before {
+                  --adamtac-bar-intensity: var(--adamtac-yellow-intensity);
+                  --adamtac-bar-rgb: var(--adamtac-yellow-rgb);
+                  animation: adamtac-bar-yellow 3s ease-in-out infinite;
+              }
+
+              tr.adamtac-row.adamtac-orange td.conv-subject > a::before {
+                  --adamtac-bar-intensity: var(--adamtac-orange-intensity);
+                  --adamtac-bar-rgb: var(--adamtac-orange-rgb);
+                  animation: adamtac-bar-orange 2.5s ease-in-out infinite;
+              }
+
+              tr.adamtac-row.adamtac-red td.conv-subject > a::before {
+                  --adamtac-bar-intensity: var(--adamtac-red-intensity);
+                  --adamtac-bar-rgb: var(--adamtac-red-rgb);
+                  animation: adamtac-bar-red 2s ease-in-out infinite;
+              }
+
+              tr.adamtac-row td.conv-subject > a::before {
+                  animation-delay: calc(-1s * var(--adamtac-sync));
+              }
+          }
+
+          @media (max-width: 1000px) and (prefers-reduced-motion: reduce) {
+              tr.adamtac-row.adamtac-green td.conv-subject > a::before,
+              tr.adamtac-row.adamtac-yellow td.conv-subject > a::before,
+              tr.adamtac-row.adamtac-orange td.conv-subject > a::before,
+              tr.adamtac-row.adamtac-red td.conv-subject > a::before {
+                  animation: none !important;
+              }
+
+              tr.adamtac-row.adamtac-green td.conv-subject > a::before {
+                  background-color: rgba(var(--adamtac-green-rgb), calc(var(--adamtac-green-intensity) / 100)) !important;
+              }
+
+              tr.adamtac-row.adamtac-yellow td.conv-subject > a::before {
+                  background-color: rgba(var(--adamtac-yellow-rgb), calc(var(--adamtac-yellow-intensity) / 100)) !important;
+              }
+
+              tr.adamtac-row.adamtac-orange td.conv-subject > a::before {
+                  background-color: rgba(var(--adamtac-orange-rgb), calc(var(--adamtac-orange-intensity) / 100)) !important;
+              }
+
+              tr.adamtac-row.adamtac-red td.conv-subject > a::before {
+                  background-color: rgba(var(--adamtac-red-rgb), calc(var(--adamtac-red-intensity) / 100)) !important;
+              }
+          }
+
+          /* Optional per-mailbox static mode. */
+          tr.adamtac-row.adamtac-no-pulse td.conv-current::before,
+          tr.adamtac-row.adamtac-no-pulse + tr.cf-conv-row td::before {
+              animation: none !important;
+              background-color: rgba(var(--adamtac-bar-rgb), calc(var(--adamtac-bar-intensity) / 100)) !important;
+          }
+
+          @media (max-width: 1000px) {
+              tr.adamtac-row.adamtac-no-pulse td.conv-subject > a::before {
+                  animation: none !important;
+                  background-color: rgba(var(--adamtac-bar-rgb), calc(var(--adamtac-bar-intensity) / 100)) !important;
+              }
+          }
+          '''
+          css_path.write_text(head + tail)
+
+          js_path = Path('Public/js/module.js')
+          js = js_path.read_text()
+          old = '''            var row = closestTag(marker, 'tr');
+            var cell = closestTag(marker, 'td') || closestTag(marker, 'th');
+
+            safeAddAgingClasses(row, marker.getAttribute('data-adamtac-class'));
+
+            // Mobile/table themes can rename or hide core cells such as td.conv-subject.
+            // Mark the actual cell containing our hook marker so CSS has a stable anchor.
+            if (cell && cell.classList) {
+                cell.classList.add('adamtac-subject-cell');
+            }
+
+            marker.setAttribute('data-adamtac-applied', '1');'''
+          new = '''            var row = closestTag(marker, 'tr');
+
+            safeAddAgingClasses(row, marker.getAttribute('data-adamtac-class'));
+            marker.setAttribute('data-adamtac-applied', '1');'''
+          if old not in js:
+              raise SystemExit('JS mobile-cell fallback block not found')
+          js_path.write_text(js.replace(old, new, 1))
+
+          provider = Path('Providers/AdamTicketAgingColorsServiceProvider.php')
+          text = provider.read_text()
+          if "const VERSION = '1.1.10';" not in text:
+              raise SystemExit('provider version not found')
+          provider.write_text(text.replace("const VERSION = '1.1.10';", "const VERSION = '1.1.11';", 1))
+
+          module_path = Path('module.json')
+          module = json.loads(module_path.read_text())
+          module['version'] = '1.1.11'
+          module_path.write_text(json.dumps(module, indent=2, ensure_ascii=False) + '\n')
+          Path('version.txt').write_text('1.1.11\n')
+
+          changelog = Path('CHANGELOG.md')
+          text = changelog.read_text()
+          entry = '''# Changelog\n\n## 1.1.11 - TEST BUILD\n\n### Fixed\n\n- Removed the responsive table-cell positioning fallback that could cover FreeScout's absolutely positioned customer name in mobile/app layouts.\n- Anchored the responsive aging indicator inside the existing subject link instead of modifying `td.conv-subject` geometry.\n- Removed the JavaScript `adamtac-subject-cell` fallback; the marker now only applies the aging row classes on older compatible FreeScout layouts.\n\n'''
+          if not text.startswith('# Changelog\n\n'):
+              raise SystemExit('unexpected changelog header')
+          changelog.write_text(entry + text[len('# Changelog\n\n'):])
+          PY
+
+      - name: Static checks
+        shell: bash
+        run: |
+          set -e
+          ! grep -q 'adamtac-subject-cell' Public/css/module.css
+          ! grep -q "classList.add('adamtac-subject-cell')" Public/js/module.js
+          grep -q 'td.conv-subject > a::before' Public/css/module.css
+          grep -q "const VERSION = '1.1.11';" Providers/AdamTicketAgingColorsServiceProvider.php
+          test "$(cat version.txt)" = "1.1.11"
+          php -r '$m=json_decode(file_get_contents("module.json"), true); if (!$m || $m["version"] !== "1.1.11") { exit(1); }'
+          find . -type f -name '*.php' -print0 | xargs -0 -n1 php -l >/dev/null
+
+      - name: Package module
+        shell: bash
+        run: |
+          set -e
+          rm -rf AdamTicketAgingColors AdamTicketAgingColors.zip
+          mkdir AdamTicketAgingColors
+          rsync -a ./ AdamTicketAgingColors/ \
+            --exclude '.git/' \
+            --exclude '.github/' \
+            --exclude '.gitignore' \
+            --exclude '.gitattributes' \
+            --exclude 'AdamTicketAgingColors/' \
+            --exclude '*.zip'
+          zip -qr AdamTicketAgingColors.zip AdamTicketAgingColors
+          unzip -t AdamTicketAgingColors.zip
+          sha256sum AdamTicketAgingColors.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AdamTicketAgingColors-1.1.11-test
+          path: AdamTicketAgingColors.zip
+          if-no-files-found: error
+          compression-level: 0
