@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'title' => 'Ticket-Alterungsfarben',
+    'title' => 'Farben nach Liegezeit',
     'enabled' => 'Aktiviert',
     'enabled_help' => 'Gilt nur für aktive Tickets und setzt sich automatisch zurück, wenn sich der Status ändert. Geschlossene Tickets werden nie eingefärbt.',
     'pulse_effect' => 'Atem- / Pulseffekt',
@@ -16,7 +16,7 @@ return [
     'baseline_last_activity' => 'Letzte Aktivität (Legacy-Modus)',
     'baseline_waiting_since' => 'Wartend seit (Ordnereinstellung)',
     'waiting_since_help' => '„Wartend seit“ nutzt den Zeitstempel des Ordners, sofern vorhanden. Hat der Ordner kein solches Feld, werden Zeilen für diese Zählung nicht eingefärbt.',
-    'last_activity_help' => 'Letzte Aktivität bleibt aus Kompatibilitätsgründen erhalten. Neue Einrichtungen sollten die letzte Statusänderung nutzen, damit die Alterung vorhersehbar bleibt.',
+    'last_activity_help' => 'Letzte Aktivität bleibt aus Kompatibilitätsgründen erhalten. Neue Einrichtungen sollten die letzte Statusänderung nutzen, damit die Liegezeit vorhersehbar bleibt.',
     'rules' => 'Regeln',
     'rules_help' => 'Lege eine Stufe „Neu“ (grün) und bis zu drei Eskalationsstufen fest. Grün gilt, solange die gewählte Zeitspanne noch nicht überschritten ist (vergangen ≤ Schwelle). Gelb, Orange und Rot gelten, sobald ihre Schwelle erreicht ist (vergangen ≥ Schwelle).',
     'fixed_palette_help' => 'Die Farben stammen aus einer festen Palette, damit sie zu allen Themes passen.',
