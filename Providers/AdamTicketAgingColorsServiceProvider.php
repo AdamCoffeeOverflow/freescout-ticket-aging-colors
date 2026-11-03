@@ -119,6 +119,16 @@ class AdamTicketAgingColorsServiceProvider extends ServiceProvider
             // mailbox setting is disabled, CSS keeps the same bar and opacity
             // but renders it as a static indicator.
             $pulseClass = empty($settings['pulse_enabled']) ? ' adamtac-no-pulse' : '';
+            $scopeClassFor = function (string $level) use ($settings): string {
+                $scope = (string)($settings[$level.'_scope'] ?? 'indicator');
+                if ($scope === 'customer') {
+                    return ' adamtac-hl-customer';
+                }
+                if ($scope === 'conversation') {
+                    return ' adamtac-hl-customer adamtac-hl-subject';
+                }
+                return '';
+            };
 
             $baseline = $settings['baseline'] ?? 'status_change';
             $from = null;
@@ -190,16 +200,16 @@ class AdamTicketAgingColorsServiceProvider extends ServiceProvider
             $l3u = (string)($settings['red_unit'] ?? 'business_days');
 
             if ($l3v > 0 && $elapsedForUnit($l3u) >= $l3v) {
-                return 'adamtac-row adamtac-red'.$pulseClass;
+                return 'adamtac-row adamtac-red'.$pulseClass.$scopeClassFor('red');
             }
             if ($l2v > 0 && $elapsedForUnit($l2u) >= $l2v) {
-                return 'adamtac-row adamtac-orange'.$pulseClass;
+                return 'adamtac-row adamtac-orange'.$pulseClass.$scopeClassFor('orange');
             }
             if ($l1v > 0 && $elapsedForUnit($l1u) >= $l1v) {
-                return 'adamtac-row adamtac-yellow'.$pulseClass;
+                return 'adamtac-row adamtac-yellow'.$pulseClass.$scopeClassFor('yellow');
             }
             if ($l0v > 0 && $elapsedForUnit($l0u) <= $l0v) {
-                return 'adamtac-row adamtac-green'.$pulseClass;
+                return 'adamtac-row adamtac-green'.$pulseClass.$scopeClassFor('green');
             }
         } catch (\Throwable $e) {
             // The ticket table should never break because of the visual indicator.

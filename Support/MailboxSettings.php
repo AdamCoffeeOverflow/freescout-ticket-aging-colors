@@ -35,6 +35,10 @@ class MailboxSettings
 
             'enabled'        => (bool)\Config::get(self::ALIAS.'.options.enabled.default', true),
             'pulse_enabled'  => (bool)\Config::get(self::ALIAS.'.options.pulse_enabled.default', true),
+            'green_scope'    => \Config::get(self::ALIAS.'.options.green_scope.default', 'indicator'),
+            'yellow_scope'   => \Config::get(self::ALIAS.'.options.yellow_scope.default', 'indicator'),
+            'orange_scope'   => \Config::get(self::ALIAS.'.options.orange_scope.default', 'customer'),
+            'red_scope'      => \Config::get(self::ALIAS.'.options.red_scope.default', 'conversation'),
             'baseline'       => \Config::get(self::ALIAS.'.options.baseline.default', 'status_change'),
 
             // Level 0 (green/new) applies when elapsed time is <= threshold.
@@ -168,12 +172,24 @@ class MailboxSettings
         }
 
         // Reduce to only the settings used by the current module version (keeps read-compat but avoids writing legacy junk).
+        $allowedScopes = ['indicator', 'customer', 'conversation'];
+        $scopeDefaults = [
+            'green_scope' => 'indicator',
+            'yellow_scope' => 'indicator',
+            'orange_scope' => 'customer',
+            'red_scope' => 'conversation',
+        ];
+        foreach ($scopeDefaults as $key => $fallback) {
+            $scope = (string)($merged[$key] ?? $fallback);
+            $merged[$key] = in_array($scope, $allowedScopes, true) ? $scope : $fallback;
+        }
+
         $merged = array_intersect_key($merged, array_flip([
             'enabled','pulse_enabled','baseline',
-            'green_value','green_unit','green_intensity','green_color',
-            'yellow_value','yellow_unit','yellow_intensity','yellow_color',
-            'orange_value','orange_unit','orange_intensity','orange_color',
-            'red_value','red_unit','red_intensity','red_color',
+            'green_scope','green_value','green_unit','green_intensity','green_color',
+            'yellow_scope','yellow_value','yellow_unit','yellow_intensity','yellow_color',
+            'orange_scope','orange_value','orange_unit','orange_intensity','orange_color',
+            'red_scope','red_value','red_unit','red_intensity','red_color',
         ]));
 
         self::$mergedCache[$mailboxId] = $merged;

@@ -54,8 +54,9 @@
     50% { background-color: rgba(var(--adamtac-red-rgb), calc(var(--adamtac-red-intensity) / 100)); }
 }
 
-/* Desktop only: use FreeScout's dedicated current/indicator cell. No customer,
- * subject, date, owner, attachment, or thread-count cell is modified.
+/* Desktop only: the left bar uses FreeScout's indicator cell.
+ * Customer and subject cells are tinted only when the mailbox highlight
+ * scope asks for them.
  */
 @media (min-width: 1001px) {
     tr.adamtac-row td.conv-current {
@@ -266,5 +267,69 @@
 
     tr.adamtac-row.adamtac-red .adamtac-row-marker {
         background-color: rgba(var(--adamtac-red-rgb), calc(var(--adamtac-red-intensity) / 100)) !important;
+    }
+}
+
+/* Column wash is a still, grayed tint. Only the left bar keeps the pulse,
+   so the row cannot drift out of sync. Indicator-only rows leave the
+   checkbox alone; once customer or conversation is included, the checkbox
+   takes the same still tint. */
+@media (min-width: 1001px) {
+    tr.adamtac-row.adamtac-hl-customer.adamtac-green td.conv-cb,
+    tr.adamtac-row.adamtac-hl-customer.adamtac-green td.conv-customer,
+    tr.adamtac-row.adamtac-hl-subject.adamtac-green td.conv-attachment,
+    tr.adamtac-row.adamtac-hl-subject.adamtac-green td.conv-subject,
+    tr.adamtac-row.adamtac-hl-subject.adamtac-green td.conv-thread-count {
+        --adamtac-wash: var(--adamtac-green-rgb);
+    }
+
+    tr.adamtac-row.adamtac-hl-customer.adamtac-yellow td.conv-cb,
+    tr.adamtac-row.adamtac-hl-customer.adamtac-yellow td.conv-customer,
+    tr.adamtac-row.adamtac-hl-subject.adamtac-yellow td.conv-attachment,
+    tr.adamtac-row.adamtac-hl-subject.adamtac-yellow td.conv-subject,
+    tr.adamtac-row.adamtac-hl-subject.adamtac-yellow td.conv-thread-count {
+        --adamtac-wash: var(--adamtac-yellow-rgb);
+    }
+
+    tr.adamtac-row.adamtac-hl-customer.adamtac-orange td.conv-cb,
+    tr.adamtac-row.adamtac-hl-customer.adamtac-orange td.conv-customer,
+    tr.adamtac-row.adamtac-hl-subject.adamtac-orange td.conv-attachment,
+    tr.adamtac-row.adamtac-hl-subject.adamtac-orange td.conv-subject,
+    tr.adamtac-row.adamtac-hl-subject.adamtac-orange td.conv-thread-count {
+        --adamtac-wash: var(--adamtac-orange-rgb);
+    }
+
+    tr.adamtac-row.adamtac-hl-customer.adamtac-red td.conv-cb,
+    tr.adamtac-row.adamtac-hl-customer.adamtac-red td.conv-customer,
+    tr.adamtac-row.adamtac-hl-subject.adamtac-red td.conv-attachment,
+    tr.adamtac-row.adamtac-hl-subject.adamtac-red td.conv-subject,
+    tr.adamtac-row.adamtac-hl-subject.adamtac-red td.conv-thread-count {
+        --adamtac-wash: var(--adamtac-red-rgb);
+    }
+
+    tr.adamtac-row.adamtac-hl-customer td.conv-cb,
+    tr.adamtac-row.adamtac-hl-customer td.conv-customer,
+    tr.adamtac-row.adamtac-hl-subject td.conv-attachment,
+    tr.adamtac-row.adamtac-hl-subject td.conv-subject,
+    tr.adamtac-row.adamtac-hl-subject td.conv-thread-count {
+        animation: none !important;
+        background-color: color-mix(in srgb, rgb(var(--adamtac-wash)) 18%, #f3f1ec) !important;
+    }
+
+    .dm tr.adamtac-row.adamtac-hl-customer td.conv-cb,
+    .dm tr.adamtac-row.adamtac-hl-customer td.conv-customer,
+    .dm tr.adamtac-row.adamtac-hl-subject td.conv-attachment,
+    .dm tr.adamtac-row.adamtac-hl-subject td.conv-subject,
+    .dm tr.adamtac-row.adamtac-hl-subject td.conv-thread-count {
+        background-color: color-mix(in srgb, rgb(var(--adamtac-wash)) 16%, #2a2927) !important;
+    }
+
+    tr.adamtac-row.adamtac-hl-customer td.conv-customer a,
+    tr.adamtac-row.adamtac-hl-subject td.conv-subject a,
+    tr.adamtac-row.adamtac-hl-subject .conv-fader,
+    tr.adamtac-row.adamtac-hl-subject .conv-fader::after {
+        animation: none !important;
+        background: none !important;
+        background-color: transparent !important;
     }
 }

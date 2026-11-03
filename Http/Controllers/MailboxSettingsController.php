@@ -41,6 +41,10 @@ class MailboxSettingsController extends Controller
         $request->validate([
             'enabled' => 'nullable|in:1',
             'pulse_enabled' => 'nullable|in:1',
+            'green_scope' => 'nullable|in:indicator,customer,conversation',
+            'yellow_scope' => 'nullable|in:indicator,customer,conversation',
+            'orange_scope' => 'nullable|in:indicator,customer,conversation',
+            'red_scope' => 'nullable|in:indicator,customer,conversation',
             'baseline' => 'nullable|in:status_change,waiting_since,last_activity',
             'green_value' => 'nullable|integer|min:0|max:100000',
             'yellow_value' => 'nullable|integer|min:0|max:100000',
@@ -62,6 +66,10 @@ class MailboxSettingsController extends Controller
 
             'enabled' => (bool)($request->input('enabled') ?? false),
             'pulse_enabled' => (bool)($request->input('pulse_enabled') ?? false),
+            'green_scope' => $request->get('green_scope', 'indicator'),
+            'yellow_scope' => $request->get('yellow_scope', 'indicator'),
+            'orange_scope' => $request->get('orange_scope', 'customer'),
+            'red_scope' => $request->get('red_scope', 'conversation'),
             // Laravel version compatibility: Request::boolean() may not exist on older FreeScout stacks.
             'baseline' => $request->get('baseline', 'status_change'),
 
@@ -97,6 +105,19 @@ class MailboxSettingsController extends Controller
         $allowed = ['status_change','last_activity','waiting_since'];
         if (!in_array($data['baseline'], $allowed)) {
             $data['baseline'] = 'status_change';
+        }
+
+        $allowedScopes = ['indicator', 'customer', 'conversation'];
+        $scopeDefaults = [
+            'green_scope' => 'indicator',
+            'yellow_scope' => 'indicator',
+            'orange_scope' => 'customer',
+            'red_scope' => 'conversation',
+        ];
+        foreach ($scopeDefaults as $key => $fallback) {
+            if (!in_array($data[$key], $allowedScopes, true)) {
+                $data[$key] = $fallback;
+            }
         }
 
         MailboxSettings::saveMailboxSettings((int)$mailbox->id, $data);

@@ -26,7 +26,9 @@
             'adamtac-green': true,
             'adamtac-yellow': true,
             'adamtac-orange': true,
-            'adamtac-red': true
+            'adamtac-red': true,
+            'adamtac-hl-customer': true,
+            'adamtac-hl-subject': true
         };
         var parts = String(classValue).split(/\s+/);
 
