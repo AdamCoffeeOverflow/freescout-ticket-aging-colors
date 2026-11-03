@@ -80,6 +80,9 @@
               <p class="text-muted">
                 {{ __('adamticketagingcolors::messages.fixed_palette_help') }}
               </p>
+              <p class="block-help">
+                {{ __('adamticketagingcolors::messages.highlight_scope_help') }}
+              </p>
 
               <div class="row">
                 <div class="col-sm-3">
@@ -116,6 +119,14 @@
                       </small>
                     </div>
                   </div>
+
+                  <label class="margin-top">{{ __('adamticketagingcolors::messages.highlight_scope') }}</label>
+                  <select name="green_scope" class="form-control">
+                    @php $scope = $settings['green_scope'] ?? 'indicator'; @endphp
+                    <option value="indicator" @if ($scope === 'indicator')selected="selected"@endif>{{ __('adamticketagingcolors::messages.highlight_indicator') }}</option>
+                    <option value="customer" @if ($scope === 'customer')selected="selected"@endif>{{ __('adamticketagingcolors::messages.highlight_customer') }}</option>
+                    <option value="conversation" @if ($scope === 'conversation')selected="selected"@endif>{{ __('adamticketagingcolors::messages.highlight_conversation') }}</option>
+                  </select>
                 </div>
 
                 <div class="col-sm-3">
@@ -152,6 +163,14 @@
                       </small>
                     </div>
                   </div>
+
+                  <label class="margin-top">{{ __('adamticketagingcolors::messages.highlight_scope') }}</label>
+                  <select name="yellow_scope" class="form-control">
+                    @php $scope = $settings['yellow_scope'] ?? 'indicator'; @endphp
+                    <option value="indicator" @if ($scope === 'indicator')selected="selected"@endif>{{ __('adamticketagingcolors::messages.highlight_indicator') }}</option>
+                    <option value="customer" @if ($scope === 'customer')selected="selected"@endif>{{ __('adamticketagingcolors::messages.highlight_customer') }}</option>
+                    <option value="conversation" @if ($scope === 'conversation')selected="selected"@endif>{{ __('adamticketagingcolors::messages.highlight_conversation') }}</option>
+                  </select>
                 </div>
 
                 <div class="col-sm-3">
@@ -188,6 +207,14 @@
                       </small>
                     </div>
                   </div>
+
+                  <label class="margin-top">{{ __('adamticketagingcolors::messages.highlight_scope') }}</label>
+                  <select name="orange_scope" class="form-control">
+                    @php $scope = $settings['orange_scope'] ?? 'customer'; @endphp
+                    <option value="indicator" @if ($scope === 'indicator')selected="selected"@endif>{{ __('adamticketagingcolors::messages.highlight_indicator') }}</option>
+                    <option value="customer" @if ($scope === 'customer')selected="selected"@endif>{{ __('adamticketagingcolors::messages.highlight_customer') }}</option>
+                    <option value="conversation" @if ($scope === 'conversation')selected="selected"@endif>{{ __('adamticketagingcolors::messages.highlight_conversation') }}</option>
+                  </select>
                 </div>
 
                 <div class="col-sm-3">
@@ -224,6 +251,14 @@
                       </small>
                     </div>
                   </div>
+
+                  <label class="margin-top">{{ __('adamticketagingcolors::messages.highlight_scope') }}</label>
+                  <select name="red_scope" class="form-control">
+                    @php $scope = $settings['red_scope'] ?? 'conversation'; @endphp
+                    <option value="indicator" @if ($scope === 'indicator')selected="selected"@endif>{{ __('adamticketagingcolors::messages.highlight_indicator') }}</option>
+                    <option value="customer" @if ($scope === 'customer')selected="selected"@endif>{{ __('adamticketagingcolors::messages.highlight_customer') }}</option>
+                    <option value="conversation" @if ($scope === 'conversation')selected="selected"@endif>{{ __('adamticketagingcolors::messages.highlight_conversation') }}</option>
+                  </select>
 </div>
               </div>
             </div>
